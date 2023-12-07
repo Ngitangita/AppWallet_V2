@@ -78,7 +78,7 @@ paths:
     get:
       tags:
         - Account
-      summary: Get account by id
+      summary: Get one account by id
       description: Retrieve a list of one account in the wallet application, optionally filtered by accountName.
       operationId: getAccountId
       responses:
@@ -160,6 +160,29 @@ paths:
             $ref: '#/components/responses/Response403'
           '500':
             $ref: '#/components/responses/Response500'
+
+  /currency/{id}:
+    get:
+      tags:
+        - Currency
+      summary: Get one currency by id
+      description: Retrieve a list of one currency in the wallet application, optionally filtered by currency.
+      operationId: getCurrencyId
+      responses:
+        '200':
+          description: Returned  list of one Currency
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '403':
+          $ref: '#/components/responses/Response403'
+        '500':
+          $ref: '#/components/responses/Response500'
 
 components:
   schemas:
