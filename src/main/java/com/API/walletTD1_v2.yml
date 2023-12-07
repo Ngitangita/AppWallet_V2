@@ -97,6 +97,29 @@ paths:
         '500':
           $ref: '#/components/responses/Response500'
 
+  /devise:
+    get:
+      tags:
+        - Currency
+      summary: Get all currencys
+      description: Retrieve a list of all currency in the wallet application, optionally filtered by currency.
+      operationId: getCurrencyAll
+      responses:
+        '200':
+          description: Returned  list of  Currency
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '403':
+          $ref: '#/components/responses/Response403'
+        '500':
+          $ref: '#/components/responses/Response500'
+
 components:
   schemas:
     Account:
