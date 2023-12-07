@@ -16,7 +16,7 @@ paths:
         - Account
       summary: Get all accounts
       description: Retrieve a list of all accounts in the wallet application, optionally filtered by accountName.
-      operationId: getAccountId
+      operationId: getAccountAll
       responses:
         '200':
           description: Returned  list of  Account
@@ -38,7 +38,7 @@ paths:
         - Account
       summary: Update accounts
       description: This can only be done by the logged-in accounts.
-      operationId: updateAccount
+      operationId: updateAccountId
       parameters:
         - name: accountName
           in: path
@@ -61,6 +61,29 @@ paths:
       responses:
         '200':
           description: Returned  list of  Account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '403':
+          $ref: '#/components/responses/Response403'
+        '500':
+          $ref: '#/components/responses/Response500'
+
+  /account/{id}:
+    get:
+      tags:
+        - Account
+      summary: Get account by id
+      description: Retrieve a list of one account in the wallet application, optionally filtered by accountName.
+      operationId: getAccountId
+      responses:
+        '200':
+          description: Returned  one of  Account
           content:
             application/json:
               schema:
