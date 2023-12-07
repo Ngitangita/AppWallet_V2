@@ -42,7 +42,7 @@ paths:
       parameters:
         - name: accountName
           in: path
-          description: Name that needs to be deleted
+          description: Name that needs to be update
           required: true
           schema:
             type: string
@@ -191,6 +191,47 @@ paths:
       summary: Get all transactions
       description: Retrieve a list of all transaction in the wallet application, optionally filtered by transaction.
       operationId: getTransactionAll
+      responses:
+        '200':
+          description: Returned  list of  Transaction
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '403':
+          $ref: '#/components/responses/Response403'
+        '500':
+          $ref: '#/components/responses/Response500'
+
+    put:
+      tags:
+        - Transaction
+      summary: Update transactions
+      description: This can only be done by the logged-in transaction.
+      operationId: updateTransactionId
+      parameters:
+        - name: transaction
+          in: path
+          description: Name that needs to be update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent transaction in the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
       responses:
         '200':
           description: Returned  list of  Transaction
