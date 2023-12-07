@@ -278,6 +278,7 @@ components:
       properties:
         id:
           type: integer
+          example: 01
         name:
           type: string
           enum:
@@ -285,6 +286,7 @@ components:
             - SAVINGS_ACCOUNT
         sold:
           type: number
+          example: 100 000
         updateAt:
           type: string
           format: "date-time"
@@ -304,6 +306,7 @@ components:
       properties:
         id:
           type: integer
+          example: 01
         name:
           type: string
           enum:
@@ -320,10 +323,13 @@ components:
       properties:
         id:
           type: integer
+          example: 01
         label:
           type: string
+          example: "Payement"
         amount:
           type: number
+          example: 50 000
         transactionDateTim:
           type: string
           format: "date-time"
