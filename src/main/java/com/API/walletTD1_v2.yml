@@ -1,0 +1,125 @@
+openapi: 3.0.3
+info:
+  title: Wallet API
+  version: 1.0.0
+  description: Wallet_TD1_STD22047_STD22036
+servers:
+  - url: https://library.com
+tags:
+  - name: Account
+  - name: Currency
+  - name: Transaction
+paths:
+  /account:
+    get:
+      tags:
+        - Account
+      summary: Get all accounts
+      description: Retrieve a list of all accounts in the wallet application, optionally filtered by accountName.
+      operationId: getAccountId
+      responses:
+        '200':
+          description: Returned  list of  Account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '403':
+          $ref: '#/components/responses/Response403'
+        '500':
+          $ref: '#/components/responses/Response500'
+   
+
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          enum:
+            - CURRENT_ACCOUNT
+            - SAVINGS_ACCOUNT
+        sold:
+          type: number
+        updateAt:
+          type: string
+          format: "date-time"
+        properties:
+          allOf:
+            - $ref: "#/components/schemas/Transaction"
+            - $ref: "#/components/schemas/Currency"
+        Type:
+          type: string
+          enum:
+            - BANK
+            - CASH
+            - MOBILE_MONEY
+
+    Currency:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          enum:
+            - ARIARY
+            - EURO
+        code: 
+          type: string
+          enum:
+            - AR 
+            - EUR 
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        amount:
+          type: number
+        transactionDateTim:
+          type: string
+          format: "date-time"
+        type:
+          type: string
+          enum:
+            - DEBIT
+            - CREDIT
+
+  responses:
+    Response400:
+      description: Bad Request
+      content:
+        application/json:
+          example:
+            statusCode: 400
+            message: "Bad Request"
+            property: "Value of the property in the response body"
+
+    Response403:
+      description: Forbidden
+      content:
+        application/json:
+          example:
+            statusCode: 403
+            message: "Forbidden"
+            property: "Value of the property in the response body"
+
+    Response500:
+      description: Internal Server Error
+      content:
+        application/json:
+          example:
+            statusCode: 500
+            message: "Internal Server Error"
+            property: "Value of the property in the response body"
