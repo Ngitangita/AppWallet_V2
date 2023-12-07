@@ -47,7 +47,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Update an existent account in the store
+        description: Update an existent account in the the application wallet.
         content:
           application/json:
             schema:
@@ -97,7 +97,7 @@ paths:
         '500':
           $ref: '#/components/responses/Response500'
 
-  /devise:
+  /currency:
     get:
       tags:
         - Currency
@@ -119,6 +119,47 @@ paths:
           $ref: '#/components/responses/Response403'
         '500':
           $ref: '#/components/responses/Response500'
+
+    put:
+        tags:
+          - Currency
+        summary: Update currencys
+        description: This can only be done by the logged-in currency.
+        operationId: updateCurrencyId
+        parameters:
+          - name: Currency
+            in: path
+            description: Name that needs to be update 
+            required: true
+            schema:
+              type: string
+        requestBody:
+          description: Update an existent currency in the application wallet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Currency'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Currency'
+            application/x-www-form-urlencoded:
+              schema:
+                $ref: '#/components/schemas/Currency'
+        responses:
+          '200':
+            description: Returned  list of  Currency
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Currency'
+          '400':
+            $ref: '#/components/responses/Response400'
+          '403':
+            $ref: '#/components/responses/Response403'
+          '500':
+            $ref: '#/components/responses/Response500'
 
 components:
   schemas:
