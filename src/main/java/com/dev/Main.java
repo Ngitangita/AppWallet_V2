@@ -1,5 +1,7 @@
 package com.dev;
 
+import com.dev.Entity.Account;
+
 public class Main {
     public static void main(String[] args){
 

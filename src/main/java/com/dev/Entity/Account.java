@@ -1,6 +1,7 @@
 package com.dev.Entity;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,6 +78,11 @@ public class Account {
 
     public void setType(TypeAccount type){
         this.type = type;
+    }
+
+    public void effectueTransaction(Transaction transaction){
+        transactions.add(transaction);
+        sold += transaction.getAmount ();
     }
 
 
