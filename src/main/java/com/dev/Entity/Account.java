@@ -1,6 +1,7 @@
 package com.dev.Entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -14,15 +15,16 @@ public class Account {
     private Currency devise;
     private TypeAccount type;
 
-    public Account(Long id, AccountName name, Double sold, LocalDateTime updateAt, List<Transaction> transactions, Currency devise, TypeAccount type){
+    public Account(Long id, AccountName name, Double sold, LocalDateTime updateAt, Currency devise, TypeAccount type){
         this.id = id;
         this.name = name;
         this.sold = sold;
         this.updateAt = updateAt;
-        this.transactions = transactions;
+        this.transactions = new ArrayList<>();
         this.devise = devise;
         this.type = type;
     }
+
 
     public Long getId(){
         return id;
@@ -80,11 +82,22 @@ public class Account {
         this.type = type;
     }
 
-    public void effectueTransaction(Transaction transaction){
-        transactions.add(transaction);
-        sold += transaction.getAmount ();
+
+    public void addTransactions(Transaction ts) {
+        if (!this.transactions.contains(ts)){
+            ts.setTransactionDateTim(LocalDateTime.now());
+            this.transactions.add(ts);
+            ts.setAccount(this);
+        }
     }
 
+
+    public void removeTransaction(Transaction ts) {
+        if (this.transactions.contains(ts)) {
+            this.transactions.remove(ts);
+            ts.setAccount(null);
+        }
+    }
 
     @Override
     public boolean equals(Object o){

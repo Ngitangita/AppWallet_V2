@@ -10,12 +10,24 @@ public class Transaction {
     private LocalDateTime transactionDateTim;
     private TypeTransaction type;
 
-    public Transaction(Long id, String label, Double amount, LocalDateTime transactionDateTim, TypeTransaction type){
+    private Account account;
+
+
+    public Transaction(Long id, String label, Double amount, LocalDateTime transactionDateTim, TypeTransaction type, Account account) {
         this.id = id;
         this.label = label;
         this.amount = amount;
         this.transactionDateTim = transactionDateTim;
         this.type = type;
+        this.account = account;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public Long getId(){
