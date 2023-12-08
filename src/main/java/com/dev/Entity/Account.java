@@ -132,6 +132,26 @@ public class Account {
         return currentBalance;
     }
 
+    public List<SoldHistoryEntry> getSoldHistoryInInterval(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        List<SoldHistoryEntry> soldHistory = new ArrayList<>();
+        double currentBalance = 0;
+        for (Transaction transaction : transactions) {
+            LocalDateTime transactionDateTime = transaction.getTransactionDateTim();
+            if ((transactionDateTime.isEqual(startDateTime) || transactionDateTime.isAfter(startDateTime))
+                    && transactionDateTime.isBefore(endDateTime)) {
+                if (transaction.getType().equals(TypeTransaction.DEBIT)) {
+                    currentBalance -= transaction.getAmount();
+                } else if (transaction.getType().equals(TypeTransaction.CREDIT)) {
+                    currentBalance += transaction.getAmount();
+                }
+
+                soldHistory.add(new SoldHistoryEntry(transactionDateTime, currentBalance));
+            }
+        }
+
+        return soldHistory;
+    }
+
 
     @Override
     public boolean equals(Object o){
