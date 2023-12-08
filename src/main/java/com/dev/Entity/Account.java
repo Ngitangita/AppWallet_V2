@@ -116,6 +116,21 @@ public class Account {
         }
         return this;
     }
+
+    public double getBalanceAtDateTime(LocalDateTime dateTime) {
+        double currentBalance = 0;
+
+        for (Transaction transaction : transactions) {
+            if (transaction.getTransactionDateTim().isBefore(dateTime) || transaction.getTransactionDateTim().isEqual(dateTime)) {
+                if (transaction.getType().equals(TypeTransaction.DEBIT)) {
+                    currentBalance -= transaction.getAmount();
+                } else if (transaction.getType().equals(TypeTransaction.CREDIT)) {
+                    currentBalance += transaction.getAmount();
+                }
+            }
+        }
+        return currentBalance;
+    }
     @Override
     public boolean equals(Object o){
         if (this == o) return true;
