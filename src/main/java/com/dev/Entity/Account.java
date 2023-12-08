@@ -26,6 +26,8 @@ public class Account {
     }
 
 
+
+
     public Long getId(){
         return id;
     }
@@ -99,6 +101,21 @@ public class Account {
         }
     }
 
+
+
+    public Account effectTransaction(Transaction ts) {
+        if (!type.equals(TypeAccount.BANK) && ts.getType().equals(TypeTransaction.DEBIT) && ts.getAmount() > this.sold) {
+            System.out.println("Insufficient funds for the transaction.");
+        } else {
+            if (ts.getType().equals(TypeTransaction.DEBIT)) {
+                this.sold -= ts.getAmount();
+            } else if (ts.getType().equals(TypeTransaction.CREDIT)) {
+                this.sold += ts.getAmount();
+            }
+            transactions.add(ts);
+        }
+        return this;
+    }
     @Override
     public boolean equals(Object o){
         if (this == o) return true;
