@@ -85,14 +85,13 @@ public class Account {
     }
 
 
-    public void addTransactions(Transaction ts) {
-        if (!this.transactions.contains(ts)){
+    public void addTransaction(Transaction ts) {
+        if (!this.transactions.contains(ts)) {
             ts.setTransactionDateTim(LocalDateTime.now());
             this.transactions.add(ts);
             ts.setAccount(this);
         }
     }
-
 
     public void removeTransaction(Transaction ts) {
         if (this.transactions.contains(ts)) {
@@ -101,35 +100,22 @@ public class Account {
         }
     }
 
-
-
     public Account effectTransaction(Transaction ts) {
         if (!type.equals(TypeAccount.BANK) && ts.getType().equals(TypeTransaction.DEBIT) && ts.getAmount() > this.sold) {
             System.out.println("Insufficient funds for the transaction.");
         } else {
-            if (ts.getType().equals(TypeTransaction.DEBIT)) {
-                this.sold -= ts.getAmount();
-            } else if (ts.getType().equals(TypeTransaction.CREDIT)) {
-                this.sold += ts.getAmount();
-            }
+            updateSoldBalance(ts);
             transactions.add(ts);
         }
         return this;
     }
 
-    public double getSoldAtDateTime(LocalDateTime dateTime) {
-        double currentBalance = 0;
-
-        for (Transaction transaction : transactions) {
-            if (transaction.getTransactionDateTim().isBefore(dateTime) || transaction.getTransactionDateTim().isEqual(dateTime)) {
-                if (transaction.getType().equals(TypeTransaction.DEBIT)) {
-                    currentBalance -= transaction.getAmount();
-                } else if (transaction.getType().equals(TypeTransaction.CREDIT)) {
-                    currentBalance += transaction.getAmount();
-                }
-            }
+    private void updateSoldBalance(Transaction ts) {
+        if (ts.getType().equals(TypeTransaction.DEBIT)) {
+            this.sold -= ts.getAmount();
+        } else if (ts.getType().equals(TypeTransaction.CREDIT)) {
+            this.sold += ts.getAmount();
         }
-        return currentBalance;
     }
 
     public List<SoldHistoryEntry> getSoldHistoryInInterval(LocalDateTime startDateTime, LocalDateTime endDateTime) {
