@@ -117,7 +117,7 @@ public class Account {
         return this;
     }
 
-    public double getBalanceAtDateTime(LocalDateTime dateTime) {
+    public double getSoldAtDateTime(LocalDateTime dateTime) {
         double currentBalance = 0;
 
         for (Transaction transaction : transactions) {
@@ -131,6 +131,8 @@ public class Account {
         }
         return currentBalance;
     }
+
+
     @Override
     public boolean equals(Object o){
         if (this == o) return true;

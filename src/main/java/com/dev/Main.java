@@ -1,6 +1,7 @@
 package com.dev;
 
 import com.dev.Entity.Account;
+import com.dev.Entity.SoldHistoryEntry;
 
 public class Main {
     public static void main(String[] args){
@@ -9,4 +10,8 @@ public class Main {
         System.out.println (  System.getenv ( "PG_USER" ) );
         System.out.println (  System.getenv ( "PG_PASSWORD" ) );
     }
+
+
+
+
 }
