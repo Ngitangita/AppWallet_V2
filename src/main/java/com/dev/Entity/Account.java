@@ -15,11 +15,11 @@ public class Account {
     private Currency devise;
     private TypeAccount type;
 
-    public Account(Long id, AccountName name, Double sold, LocalDateTime updateAt, Currency devise, TypeAccount type){
+    public Account(Long id, AccountName name, Double sold, Currency devise, TypeAccount type){
         this.id = id;
         this.name = name;
         this.sold = sold;
-        this.updateAt = updateAt;
+        this.updateAt = LocalDateTime.now();
         this.transactions = new ArrayList<>();
         this.devise = devise;
         this.type = type;
