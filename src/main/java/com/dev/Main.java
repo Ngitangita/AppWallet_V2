@@ -1,8 +1,5 @@
 package com.dev;
 
-import com.dev.Entity.Account;
-import com.dev.Entity.SoldHistoryEntry;
-
 public class Main {
     public static void main(String[] args){
 
