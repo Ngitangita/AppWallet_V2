@@ -8,7 +8,4 @@ public class Main {
         System.out.println (  System.getenv ( "PG_PASSWORD" ) );
     }
 
-
-
-
 }
