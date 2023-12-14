@@ -10,7 +10,7 @@ public interface CrudOperations <T, I>{
     List<T> saveAll(List<T> toSaves);
 
 
-    List<T> updateAll(List<T> toSaves);
+    List<T> updateAll(List<T> toUpdates);
 
     T save(T toSave);
 

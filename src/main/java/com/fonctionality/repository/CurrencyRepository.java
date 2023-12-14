@@ -36,57 +36,22 @@ public class CurrencyRepository implements CrudOperations<Currency, Long>{
     @Override
     public List<Currency> saveAll(List<Currency> toSaves) {
         List<Currency> savedCurrencies = new ArrayList<>();
-        try (Connection con = DatabaseConnection.getConnection()) {
-            final String insertQuery = "INSERT INTO \"currency\" (code, name) VALUES (?, ?)";
-            try (PreparedStatement pstmt = con.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
-                for (Currency toSave : toSaves) {
-                    final long id = toSave.getId();
-                    if (id == 0) {
-                        pstmt.setString(1, String.valueOf(toSave.getCode()));
-                        pstmt.setString(2, String.valueOf(toSave.getName()));
-                        int rows = pstmt.executeUpdate();
-                        if (rows > 0) {
-                            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                                if (generatedKeys.next()) {
-                                    toSave.setId(generatedKeys.getLong(1));
-                                    savedCurrencies.add(toSave);
-                                }
-                            }
-                        } else {
-                            throw new RuntimeException("Insert failed for currency: " + toSave);
-                        }
-                    }
-
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error saving currencies", e);
+        for (Currency currency : toSaves) {
+            Currency savedCurrency = update(currency);
+            savedCurrencies.add(savedCurrency);
         }
-        return savedCurrencies;
+       return savedCurrencies;
     }
 
     @Override
-    public List<Currency> updateAll(List<Currency> toSaves) {
+    public List<Currency> updateAll(List<Currency> toUpdates) {
         List<Currency> upCurrencies = new ArrayList<>();
-        final String updateQuery = "UPDATE \"currency\" SET code = ?, name = ? WHERE id = ?";
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = con.prepareStatement(updateQuery)
-        ) {
-            for (Currency toSave : toSaves) {
-                pstmt.setString(1, String.valueOf(toSave.getCode()));
-                pstmt.setString(2, String.valueOf(toSave.getName()));
-                pstmt.setLong(3, toSave.getId());
-                int rows = pstmt.executeUpdate();
-                if (rows > 0) {
-                    upCurrencies.add(toSave);
-                } else {
-                    throw new RuntimeException("Update failed for currency with ID " + toSave.getId());
-                }
-            }
-            return upCurrencies;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error updating currencies", e);
+        for (Currency currency : toUpdates) {
+            Currency updatedCurrency = update(currency);
+            upCurrencies.add(updatedCurrency);
         }
+
+        return upCurrencies;
     }
 
 

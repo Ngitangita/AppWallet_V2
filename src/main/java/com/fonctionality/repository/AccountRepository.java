@@ -44,41 +44,26 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
 
     @Override
     public List<Account> saveAll(List<Account> toSaves) {
-        final String addAccount = "INSERT INTO \"account\" (name, balance, last_update_date_time, currency_id, account_type) VALUES (?, ?, ?, ?, ?)";
-        final String addCurrency = "INSERT INTO \"currency\" (code, name) VALUES (?, ?)";
         List<Account> savedAccounts = new ArrayList<>();
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pstmtAccount = con.prepareStatement(addAccount, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement pstmtCurrency = con.prepareStatement(addCurrency, Statement.RETURN_GENERATED_KEYS)
-        ) {
-                for (Account account : toSaves) {
-                    Account savedAccount = toAccount(account, pstmtAccount, pstmtCurrency);
-                    int rows = pstmtAccount.executeUpdate();
-                    if (rows > 0) {
-                        try (ResultSet keys = pstmtAccount.getGeneratedKeys()) {
-                            if (keys.next()) {
-                                Long generatedId = keys.getLong(1);
-                                savedAccount.setId(generatedId);
-                                savedAccounts.add(savedAccount);
-                            } else  {
-                                throw new RuntimeException("Failed to retrieve generated ID for Account");
-                            }
-                        }
-
-                    }
-                }
-            return savedAccounts;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error saving accounts", e);
+        for (Account account : toSaves) {
+            Account updatedAccount = save(account);
+            savedAccounts.add(updatedAccount);
         }
+        return savedAccounts;
     }
 
 
 
     @Override
-    public List<Account> updateAll(List<Account> toSaves) {
-        return null;
+    public List<Account> updateAll(List<Account> toUpdates) {
+        List<Account> updatedAccounts = new ArrayList<>();
+        for (Account account : toUpdates) {
+            Account updatedAccount = update(account);
+            updatedAccounts.add(updatedAccount);
+        }
+        return updatedAccounts;
     }
+
 
     @Override
     public Account save(Account toSave) {
@@ -109,18 +94,33 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
 
     private Account toAccount(Account toSave, PreparedStatement pstmtAccount, PreparedStatement pstmtCurrency) throws SQLException {
         saveCurrencyIfNecessary(pstmtCurrency, toSave.getCurrency());
-        pstmtAccount.setString(1, String.valueOf(toSave.getName()));
-        pstmtAccount.setDouble(2, toSave.getBalance());
-        pstmtAccount.setTimestamp(3, Timestamp.valueOf(toSave.getLastUpdateDateTime()));
-        pstmtAccount.setLong(4, toSave.getCurrency().getId());
-        pstmtAccount.setString(5, String.valueOf(toSave.getAccount_type()));
+        updateAccount(toSave, pstmtAccount);
         return toSave;
     }
 
     @Override
     public Account update(Account toUpdate) {
-        return null;
+        try (Connection con = DatabaseConnection.getConnection()) {
+            final String updateCurrency = "UPDATE \"currency\" SET code = ?, name = ? WHERE id = ?";
+            final String updateAccount = "UPDATE \"account\" SET name = ?, balance = ?, last_update_date_time = ?, currency_id = ?, account_type = ? WHERE id = ?";
+            try (PreparedStatement pstmtAccount = con.prepareStatement(updateAccount);
+                 PreparedStatement pstmtCurrency = con.prepareStatement(updateCurrency)
+            ) {
+                updateCurrencyIfNecessary(pstmtCurrency, toUpdate.getCurrency());
+                updateAccount(toUpdate, pstmtAccount);
+                pstmtAccount.setLong(6, toUpdate.getId());
+                int rows = pstmtAccount.executeUpdate();
+                if (rows > 0) {
+                    return toUpdate;
+                } else {
+                    throw new RuntimeException("Account update failed. Account not found with id: " + toUpdate.getId());
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating account", e);
+        }
     }
+
 
     @Override
     public Account findById(Long id) {
@@ -164,22 +164,42 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     }
 
     private void saveCurrencyIfNecessary(PreparedStatement pstmt, Currency currency) throws SQLException {
-        if (currency != null && currency.getId() == 0 && isExistInDataBase(currency.getName(), currency.getCode())) {
-                pstmt.setString(1, String.valueOf(currency.getCode()));
-                pstmt.setString(2, String.valueOf(currency.getName()));
-                int rows = pstmt.executeUpdate();
-                if (rows > 0) {
-                    try (ResultSet keys = pstmt.getGeneratedKeys()) {
-                        if (keys.next()) {
-                            currency.setId(keys.getLong(1));
-                        }
-                        throw new RuntimeException("Failed to retrieve generated ID for currency");
-                    }
-                } else {
-                    throw new RuntimeException("Currency creation failed");
-                }
+        if (!isExistInDataBase(currency.getName(), currency.getCode())) {
+            toCurrency(pstmt, currency);
         }
     }
+
+    private void updateCurrencyIfNecessary(PreparedStatement pstmt, Currency currency) throws SQLException {
+        if (isExistInDataBase(currency.getName(), currency.getCode())) {
+            toCurrency(pstmt, currency);
+        }
+    }
+
+    private void toCurrency(PreparedStatement pstmt, Currency currency) throws SQLException {
+        pstmt.setString(1, String.valueOf(currency.getCode()));
+        pstmt.setString(2, String.valueOf(currency.getName()));
+        int rows = pstmt.executeUpdate();
+        if (rows > 0) {
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    currency.setId(keys.getLong(1));
+                }
+                throw new RuntimeException("Failed to retrieve generated ID for currency");
+            }
+        } else {
+            throw new RuntimeException("Currency creation failed");
+        }
+    }
+
+    private void updateAccount(Account toUpdate, PreparedStatement pstmtAccount) throws SQLException {
+        pstmtAccount.setString(1, String.valueOf(toUpdate.getName()));
+        pstmtAccount.setDouble(2, toUpdate.getBalance());
+        pstmtAccount.setTimestamp(3, Timestamp.valueOf(toUpdate.getLastUpdateDateTime()));
+        pstmtAccount.setLong(4, toUpdate.getCurrency().getId());
+        pstmtAccount.setString(5, String.valueOf(toUpdate.getAccount_type()));
+    }
+
+
     private boolean isExistInDataBase(NameCurrency name, CodeCurrency code) {
         List<Currency> currencies = this.currencyRepository.findAll();
         for (Currency currency : currencies) {
