@@ -52,22 +52,25 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
              PreparedStatement pstmtCurrency = con.prepareStatement(addCurrency, Statement.RETURN_GENERATED_KEYS)
         ) {
                 for (Account account : toSaves) {
-                    saveCurrencyIfNecessary(pstmtCurrency, account.getCurrency());
-                    pstmtAccount.setString(1, String.valueOf(account.getName()));
-                    pstmtAccount.setDouble(2, account.getBalance());
-                    pstmtAccount.setTimestamp(3, Timestamp.valueOf(account.getLastUpdateDateTime()));
-                    pstmtAccount.setLong(4, account.getCurrency().getId());
-                    pstmtAccount.setString(5, String.valueOf(account.getAccount_type()));
+                    Account savedAccount = toAccount(account, pstmtAccount, pstmtCurrency);
                     int rows = pstmtAccount.executeUpdate();
                     if (rows > 0) {
-                        savedAccounts.add(account);
+                        try (ResultSet keys = pstmtAccount.getGeneratedKeys()) {
+                            if (keys.next()) {
+                                Long generatedId = keys.getLong(1);
+                                savedAccount.setId(generatedId);
+                                savedAccounts.add(savedAccount);
+                            } else  {
+                                throw new RuntimeException("Failed to retrieve generated ID for Account");
+                            }
+                        }
+
                     }
                 }
+            return savedAccounts;
         } catch (SQLException e) {
             throw new RuntimeException("Error saving accounts", e);
         }
-
-        return savedAccounts;
     }
 
 
@@ -79,7 +82,39 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
 
     @Override
     public Account save(Account toSave) {
-        return null;
+        final String addAccount = "INSERT INTO \"account\" (name, balance, last_update_date_time, currency_id, account_type) VALUES (?, ?, ?, ?, ?)";
+        final String addCurrency = "INSERT INTO \"currency\" (code, name) VALUES (?, ?)";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pstmtAccount = con.prepareStatement(addAccount, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement pstmtCurrency = con.prepareStatement(addCurrency, Statement.RETURN_GENERATED_KEYS)
+        ) {
+
+            Account savedAccount = toAccount(toSave, pstmtAccount, pstmtCurrency);
+            int rows = pstmtAccount.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet keys = pstmtAccount.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        Long generatedId = keys.getLong(1);
+                        savedAccount.setId(generatedId);
+                        return savedAccount;
+                    }
+                    throw new RuntimeException("Failed to retrieve generated ID for Account");
+                }
+            }
+            throw new RuntimeException("Error saving account");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Account toAccount(Account toSave, PreparedStatement pstmtAccount, PreparedStatement pstmtCurrency) throws SQLException {
+        saveCurrencyIfNecessary(pstmtCurrency, toSave.getCurrency());
+        pstmtAccount.setString(1, String.valueOf(toSave.getName()));
+        pstmtAccount.setDouble(2, toSave.getBalance());
+        pstmtAccount.setTimestamp(3, Timestamp.valueOf(toSave.getLastUpdateDateTime()));
+        pstmtAccount.setLong(4, toSave.getCurrency().getId());
+        pstmtAccount.setString(5, String.valueOf(toSave.getAccount_type()));
+        return toSave;
     }
 
     @Override
