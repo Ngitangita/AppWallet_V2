@@ -1,11 +1,14 @@
 package com.fonctionality;
 
+import com.fonctionality.repository.CurrencyRepository;
+
 public class Main {
     public static void main(String[] args){
+        CurrencyRepository cr = new CurrencyRepository();
 
-        System.out.println (  System.getenv ( "PG_URL" ) );
-        System.out.println (  System.getenv ( "PG_USER" ) );
-        System.out.println (  System.getenv ( "PG_PASSWORD" ) );
+        System.out.println(cr.findAll());
+        System.out.println(cr.findById(1L));
     }
+
 
 }

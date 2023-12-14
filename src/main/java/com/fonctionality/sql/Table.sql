@@ -19,7 +19,7 @@
             last_update_date_time timestamp,
             currency_id INT,
             account_type VARCHAR(20),
-            FOREIGN KEY ( currency_id ) REFERENCES "currency"(id)
+            FOREIGN KEY ( currency_id ) REFERENCES "currency"(id) ON DELETE CASCADE ON UPDATE CASCADE
         );
 
         -- Inserting account types
@@ -37,7 +37,7 @@
             date_time timestamp,
             transaction_type VARCHAR(10),
             account_id INT,
-            FOREIGN KEY (account_id) REFERENCES "account"(id)
+            FOREIGN KEY (account_id) REFERENCES "account"(id) ON DELETE CASCADE ON UPDATE CASCADE
         );
 
         -- Inserting a transaction
