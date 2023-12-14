@@ -1,4 +1,4 @@
-package com.dev.Entity;
+package com.fonctionality.entity;
 
 import lombok.*;
 

@@ -1,4 +1,4 @@
-package com.dev.Entity;
+package com.fonctionality.entity;
 
 import lombok.*;
 
@@ -21,4 +21,18 @@ public class Account {
     private List<Transaction> transactions = new ArrayList<>();
     private Currency currency;
     private TypeAccount account_type;
+
+    public void addTransaction(Transaction ts) {
+        if (!this.transactions.contains(ts)) {
+            this.transactions.add(ts);
+            ts.setAccount(this);
+        }
+    }
+
+    public void removeTransaction(Transaction ts) {
+        if (this.transactions.contains(ts)){
+            this.transactions.remove(ts);
+            ts.setAccount(null);
+        }
+    }
 }

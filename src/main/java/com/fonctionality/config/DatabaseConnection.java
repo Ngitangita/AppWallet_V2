@@ -1,4 +1,4 @@
-package com.dev.Config;
+package com.fonctionality.config;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
