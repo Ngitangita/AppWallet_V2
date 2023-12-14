@@ -52,7 +52,6 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
              PreparedStatement pstmtCurrency = con.prepareStatement(addCurrency, Statement.RETURN_GENERATED_KEYS)
         ) {
                 for (Account account : toSaves) {
-
                     saveCurrencyIfNecessary(pstmtCurrency, account.getCurrency());
                     pstmtAccount.setString(1, String.valueOf(account.getName()));
                     pstmtAccount.setDouble(2, account.getBalance());
@@ -90,12 +89,43 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
 
     @Override
     public Account findById(Long id) {
-        return null;
+        try (Connection con = DatabaseConnection.getConnection()) {
+            final String query = "SELECT * FROM \"currency\" WHERE id = ?";
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setLong(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Currency currency = this.currencyRepository.findById(rs.getLong("currency_id"));
+                return Account.builder()
+                        .id(rs.getLong("id"))
+                        .name(AccountName.valueOf(rs.getString("name")))
+                        .balance(rs.getDouble("balance"))
+                        .currency(currency)
+                        .lastUpdateDateTime((LocalDateTime) rs.getObject("last_update_date_time"))
+                        .account_type(TypeAccount.valueOf(rs.getString("account_type")))
+                        .build();
+            }
+            throw new RuntimeException("Currency not find");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Account deleteById(Long id) {
-        return null;
+        Account account = findById(id);
+        try (Connection con = DatabaseConnection.getConnection()) {
+            final String query = "DELETE FROM \"account\" WHERE id = ?";
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setLong(1, id);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                return account;
+            }
+            throw new RuntimeException("Account not find");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void saveCurrencyIfNecessary(PreparedStatement pstmt, Currency currency) throws SQLException {
