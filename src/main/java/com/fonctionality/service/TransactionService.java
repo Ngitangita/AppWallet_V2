@@ -35,17 +35,15 @@ public class TransactionService {
         List<SoldWithDate> balanceHistories =  new ArrayList<>();
         List<Transaction> transactions = this.transactionRepository.findAll();
         for (Transaction transaction : transactions) {
-            if (transaction.getDateTime() >= startDate && transaction.getDateTime() <= endDate && Objects.equals(transaction.getAccount().getId(), account.getId())){
+            if (!transaction.getDateTime().isBefore(startDate) && !transaction.getDateTime().isAfter(endDate) && Objects.equals(transaction.getAccount().getId(), account.getId())){
                 SoldWithDate balanceHistory = new SoldWithDate(
                         transaction.getDateTime(),
                         transaction.getAmount()
                 );
                 balanceHistories.add(balanceHistory);
             }
-            }
-        return balanceHistories;
         }
-    }
-
+        return balanceHistories;
+     }
 }
 

@@ -4,6 +4,7 @@ import com.fonctionality.entity.*;
 import com.fonctionality.repository.AccountRepository;
 import com.fonctionality.repository.CurrencyRepository;
 import com.fonctionality.repository.TransactionRepository;
+import com.fonctionality.repository.TransferHistoryRepository;
 import com.fonctionality.service.AccountService;
 import com.fonctionality.service.TransactionService;
 
@@ -17,7 +18,8 @@ public class Main {
         CurrencyRepository currencyRepository = new CurrencyRepository();
         AccountRepository accountRepository = new AccountRepository(currencyRepository);
         TransactionRepository transactionRepository = new TransactionRepository(accountRepository);
-        AccountService accountService = new AccountService ( accountRepository );
+        TransferHistoryRepository transferHistoryRepository = new TransferHistoryRepository();
+        AccountService accountService = new AccountService ( accountRepository , transferHistoryRepository);
 
         Account account = Account.builder()
                 .id(1L)

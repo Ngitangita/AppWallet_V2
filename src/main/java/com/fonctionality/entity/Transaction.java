@@ -18,5 +18,4 @@ public class Transaction {
     public LocalDateTime dateTime;
     private TypeTransaction transactionType;
     private Account account;
-    private TransactionCategory category;
 }
