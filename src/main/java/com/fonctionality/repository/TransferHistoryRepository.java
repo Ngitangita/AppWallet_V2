@@ -24,13 +24,13 @@ public class TransferHistoryRepository implements CrudOperations<TransferHistory
 
     @Override
     public TransferHistory save(TransferHistory toSave) {
-        final String query = "INSERT INTO \"transfer_history\" (debittransaction_id, credittransaction, transferdate) VALUES (?, ?, ?)";
+        final String query = "INSERT INTO \"transfer_history\" (debittransaction_id, credittransaction_id, transferdate) VALUES (?, ?, ?)";
         try (
                 Connection con = DatabaseConnection.getConnection();
                 PreparedStatement pstmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)
         ) {
-            pstmt.setString(1, String.valueOf(toSave.getDebitTransaction()));
-            pstmt.setString(2, String.valueOf(toSave.getCreditTransaction()));
+            pstmt.setLong(1, toSave.getDebitTransaction().getId());
+            pstmt.setLong(2, toSave.getCreditTransaction().getId());
             pstmt.setTimestamp(3, Timestamp.valueOf(toSave.getTransferDate()));
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
