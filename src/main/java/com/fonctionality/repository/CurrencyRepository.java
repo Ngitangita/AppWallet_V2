@@ -37,7 +37,7 @@ public class CurrencyRepository implements CrudOperations<Currency, Long>{
     public List<Currency> saveAll(List<Currency> toSaves) {
         List<Currency> savedCurrencies = new ArrayList<>();
         for (Currency currency : toSaves) {
-            Currency savedCurrency = update(currency);
+            Currency savedCurrency = save(currency);
             savedCurrencies.add(savedCurrency);
         }
        return savedCurrencies;
