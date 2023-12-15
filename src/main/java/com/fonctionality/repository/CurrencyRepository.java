@@ -83,8 +83,8 @@ public class CurrencyRepository implements CrudOperations<Currency, Long>{
 
     @Override
     public Currency update(Currency toUpdate) {
-        if (toUpdate.getId() != null) {
-            final Currency currency = findById(toUpdate.getId());
+        final Currency currency = findById(toUpdate.getId());
+        if (toUpdate.getId() != null && currency != null) {
             try (Connection con = DatabaseConnection.getConnection()) {
                 final String query = "UPDATE\"currency\" SET code = ?, name = ? WHERE id = ?";
                 PreparedStatement pstmt = con.prepareStatement(query);
@@ -93,7 +93,7 @@ public class CurrencyRepository implements CrudOperations<Currency, Long>{
                 pstmt.setLong(3, toUpdate.getId());
                 int rows = pstmt.executeUpdate();
                 if (rows > 0) {
-                    return currency;
+                    return toUpdate;
                 }
                 throw new RuntimeException("Error modifying currency");
 

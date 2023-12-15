@@ -18,14 +18,16 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     @Override
     public List<Account> findAll() {
         List<Account> accounts = new ArrayList<>();
-        final String selectQuery = "SELECT * FROM \"account\"";
-        try (
-                Connection con = DatabaseConnection.getConnection();
-                PreparedStatement pstmt = con.prepareStatement(selectQuery)
-           ){
+        final String selectQuery = "SELECT id, name, balance, currency_id, last_update_date_time, account_type FROM \"account\"";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = con.prepareStatement(selectQuery)
+        ) {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                Currency currency = this.currencyRepository.findById(rs.getLong("currency_id"));
+                Long currencyId = rs.getLong("currency_id");
+                Currency currency = this.currencyRepository.findById(currencyId);
+
                 Account account = Account.builder()
                         .id(rs.getLong("id"))
                         .name(AccountName.valueOf(rs.getString("name")))
@@ -34,13 +36,16 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
                         .lastUpdateDateTime((LocalDateTime) rs.getObject("last_update_date_time"))
                         .account_type(TypeAccount.valueOf(rs.getString("account_type")))
                         .build();
+
                 accounts.add(account);
             }
-         return accounts;
+
+            return accounts;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     @Override
     public List<Account> saveAll(List<Account> toSaves) {
