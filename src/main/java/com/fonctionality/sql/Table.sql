@@ -26,8 +26,8 @@
         INSERT INTO "account" (name, balance, last_update_date_time, currency_id, account_type) VALUES
         ( 'Current Account', 19.00, NOW(), 2, 'Bank'),
         ('Savings Account', 12.00, NOW(), 2, 'Bank'),
-        ('Cash Wallet', 15.00, NOW(), 2, 'Cash'),
-        ('Mobile Money', 188.00, NOW(), 2, 'Mobile Money');
+        ('Savings Account', 15.00, NOW(), 2, 'Cash'),
+        ('Savings Account', 188.00, NOW(), 2, 'Mobile Money');
 
         -- Table for transactions
         CREATE TABLE IF NOT EXISTS "transaction" (

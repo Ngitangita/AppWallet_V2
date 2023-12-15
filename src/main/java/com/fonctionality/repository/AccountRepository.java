@@ -25,18 +25,17 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
         ) {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                Long currencyId = rs.getLong("currency_id");
-                Currency currency = this.currencyRepository.findById(currencyId);
+                long currencyId = rs.getLong("currency_id");
+                Currency currency = (currencyId != 0L) ? this.currencyRepository.findById(currencyId) : null;
 
                 Account account = Account.builder()
                         .id(rs.getLong("id"))
-                        .name(AccountName.valueOf(rs.getString("name")))
+                        .name(AccountName.valueOf(rs.getString("name").toUpperCase().replace(" ", "_")))
                         .balance(rs.getDouble("balance"))
                         .currency(currency)
-                        .lastUpdateDateTime((LocalDateTime) rs.getObject("last_update_date_time"))
-                        .account_type(TypeAccount.valueOf(rs.getString("account_type")))
+                        .lastUpdateDateTime(rs.getTimestamp("last_update_date_time").toLocalDateTime())
+                        .account_type(TypeAccount.valueOf(rs.getString("account_type").toUpperCase().replace(" ", "_")))
                         .build();
-
                 accounts.add(account);
             }
 
