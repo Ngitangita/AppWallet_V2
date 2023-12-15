@@ -30,7 +30,7 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                         .label(rs.getString("label"))
                         .dateTime(rs.getTimestamp("date_time").toLocalDateTime())
                         .amount(rs.getDouble("amount"))
-                        .transactionType(TypeTransaction.valueOf(rs.getString("transaction_type")))
+                        .transactionType(TypeTransaction.valueOf(rs.getString("transaction_type").toUpperCase()))
                         .account(account)
                         .build();
                 transactions.add(transaction);
@@ -69,73 +69,109 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pstmt = con.prepareStatement(addTransaction, Statement.RETURN_GENERATED_KEYS)) {
 
-            if (!isExistInDataBase(
-                    toSave.getAccount().getName(),
-                    toSave.getAccount().getBalance(),
-                    toSave.getAccount().getLastUpdateDateTime(),
-                    toSave.getAccount().getCurrency(),
-                    toSave.getAccount().getAccount_type()
-            ) && toSave.getAccount() != null) {
-                Account account = this.accountRepository.save(toSave.getAccount());
-                toSave.setAccount(account);
-            }
-            pstmt.setString(1, toSave.getLabel());
-            pstmt.setDouble(2, toSave.getAmount());
-            pstmt.setTimestamp(3, Timestamp.valueOf(toSave.getDateTime()));
-            pstmt.setString(4, toSave.getTransactionType().name());
-            pstmt.setLong(5, toSave.getAccount().getId());
-
-            int rows = pstmt.executeUpdate();
-            if (rows > 0) {
-                try (ResultSet keys = pstmt.getGeneratedKeys()) {
-                    if (keys.next()) {
-                        Long generatedId = keys.getLong(1);
-                        toSave.setId(generatedId);
-
-                        return toSave;
-                    }
-                    throw new RuntimeException("Failed to retrieve generated ID for Transaction");
+            if (toSave.getAccount() != null) {
+                if (isExistInDataBase(
+                        toSave.getAccount().getName(),
+                        toSave.getAccount().getBalance(),
+                        toSave.getAccount().getLastUpdateDateTime(),
+                        toSave.getAccount().getCurrency(),
+                        toSave.getAccount().getAccount_type()
+                )) {
+                    Account account = this.accountRepository.save(toSave.getAccount());
+                    toSave.setAccount(account);
+                    toSave.getAccount().setId(account.getId());
                 }
+
+                pstmt.setString(1, toSave.getLabel());
+                pstmt.setDouble(2, toSave.getAmount());
+                pstmt.setTimestamp(3, Timestamp.valueOf(toSave.getDateTime()));
+                pstmt.setString(4, toSave.getTransactionType().name());
+
+                if (toSave.getAccount().getId() != null) {
+                    pstmt.setLong(5, toSave.getAccount().getId());
+                } else {
+                    pstmt.setNull(5, Types.BIGINT);
+                }
+
+                int rows = pstmt.executeUpdate();
+                if (rows > 0) {
+                    try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                        if (keys.next()) {
+                            Long generatedId = keys.getLong(1);
+                            toSave.setId(generatedId);
+                            return toSave;
+                        }
+                    }
+                }
+                throw new RuntimeException("Error saving transaction");
             }
-            throw new RuntimeException("Error saving transaction");
+            throw new RuntimeException("Error saving transaction: Account is null");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
 
+
+
     @Override
     public Transaction update(Transaction toUpdate) {
-        final String updateTransaction = "UPDATE \"transaction\" SET label = ?, amount = ?, dateTime = ?, transactionType = ?, account_id = ? WHERE id = ?";
+        final String updateTransactionWithAccount = "UPDATE \"transaction\" SET label = ?, amount = ?, date_time = ?, transaction_type = ?, account_id = ? WHERE id = ?";
+        final String updateTransactionWithoutAccount = "UPDATE \"transaction\" SET label = ?, amount = ?, date_time = ?, transaction_type = ? WHERE id = ?";
+
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = con.prepareStatement(updateTransaction)
+             PreparedStatement pstmtWithAccount = con.prepareStatement(updateTransactionWithAccount);
+             PreparedStatement pstmtWithoutAccount = con.prepareStatement(updateTransactionWithoutAccount)
         ) {
-            if (isExistInDataBase(
-                    toUpdate.getAccount().getName(),
-                    toUpdate.getAccount().getBalance(),
-                    toUpdate.getAccount().getLastUpdateDateTime(),
-                    toUpdate.getAccount().getCurrency(),
-                    toUpdate.getAccount().getAccount_type()
-            ) && toUpdate.getAccount() != null) {
-                Account account = this.accountRepository.update(toUpdate.getAccount());
-                toUpdate.setAccount(account);
-            }
-            pstmt.setString(1, toUpdate.getLabel());
-            pstmt.setDouble(2, toUpdate.getAmount());
-            pstmt.setTimestamp(3, Timestamp.valueOf(toUpdate.getDateTime()));
-            pstmt.setString(4, toUpdate.getTransactionType().name());
-            pstmt.setLong(5, toUpdate.getAccount().getId());
-            pstmt.setLong(6, toUpdate.getId());
-            int rows = pstmt.executeUpdate();
-            if (rows > 0) {
-                return toUpdate;
+            if (toUpdate.getAccount() != null) {
+                if (!isExistInDataBase(
+                        toUpdate.getAccount().getName(),
+                        toUpdate.getAccount().getBalance(),
+                        toUpdate.getAccount().getLastUpdateDateTime(),
+                        toUpdate.getAccount().getCurrency(),
+                        toUpdate.getAccount().getAccount_type()
+                )) {
+                    Account account = this.accountRepository.update(toUpdate.getAccount());
+                    toUpdate.setAccount(account);
+                }
+
+                pstmtWithAccount.setString(1, toUpdate.getLabel());
+                pstmtWithAccount.setDouble(2, toUpdate.getAmount());
+                pstmtWithAccount.setTimestamp(3, Timestamp.valueOf(toUpdate.getDateTime()));
+                pstmtWithAccount.setString(4, String.valueOf(toUpdate.getTransactionType()));
+
+                if (toUpdate.getAccount().getId() != null) {
+                    pstmtWithAccount.setLong(5, toUpdate.getAccount().getId());
+                } else {
+                    pstmtWithAccount.setNull(5, Types.BIGINT);
+                }
+
+                pstmtWithAccount.setLong(6, toUpdate.getId());
+                int rowsWithAccount = pstmtWithAccount.executeUpdate();
+                if (rowsWithAccount > 0) {
+                    return toUpdate;
+                } else {
+                    throw new RuntimeException("Transaction update failed. Transaction not found with id: " + toUpdate.getId());
+                }
             } else {
-                throw new RuntimeException("Transaction update failed. Transaction not found with id: " + toUpdate.getId());
+                pstmtWithoutAccount.setString(1, toUpdate.getLabel());
+                pstmtWithoutAccount.setDouble(2, toUpdate.getAmount());
+                pstmtWithoutAccount.setTimestamp(3, Timestamp.valueOf(toUpdate.getDateTime()));
+                pstmtWithoutAccount.setString(4, String.valueOf(toUpdate.getTransactionType()));
+                pstmtWithoutAccount.setLong(5, toUpdate.getId());
+
+                int rowsWithoutAccount = pstmtWithoutAccount.executeUpdate();
+                if (rowsWithoutAccount > 0) {
+                    return toUpdate;
+                } else {
+                    throw new RuntimeException("Transaction update failed. Transaction not found with id: " + toUpdate.getId());
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error updating transaction", e);
         }
     }
+
 
     @Override
     public Transaction findById(Long id) {
@@ -152,7 +188,7 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                         .label(rs.getString("label"))
                         .dateTime(rs.getTimestamp("date_time").toLocalDateTime())
                         .amount(rs.getDouble("amount"))
-                        .transactionType(TypeTransaction.valueOf(rs.getString("transaction_type")))
+                        .transactionType(TypeTransaction.valueOf(rs.getString("transaction_type").toUpperCase()))
                         .account(account)
                         .build();
             }
