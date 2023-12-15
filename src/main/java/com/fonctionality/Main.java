@@ -10,7 +10,7 @@ public class Main {
         CurrencyRepository currencyRepository = new CurrencyRepository();
         AccountRepository accountRepository = new AccountRepository(currencyRepository);
         TransactionRepository transactionRTransaction = new TransactionRepository(accountRepository);
-        System.out.println(accountRepository.findById(1L));
+        System.out.println(accountRepository.findAll());
 
     }
 
