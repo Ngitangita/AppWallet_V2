@@ -36,4 +36,16 @@ public class Account {
             ts.setAccount(null);
         }
     }
+
+    public void credit (Account account, double amount) {
+        this.balance -= amount;
+        account.balance += amount;
+    }
+
+    public void debit(Account account, double amount) {
+        this.balance += amount;
+        account.balance -= amount;
+    }
+
+
 }
