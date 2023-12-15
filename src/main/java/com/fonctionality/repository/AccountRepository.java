@@ -71,8 +71,9 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     @Override
     public Account save(Account toSave) {
         final String addAccount = "INSERT INTO \"account\" (name, balance, last_update_date_time, currency_id, account_type) VALUES (?, ?, ?, ?, ?)";
-        final String addAccountNotCurrency = "INSERT INTO \"account\" (name, balance, last_update_date_time, account_type) VALUES (?, ?, ?,  ?)";
+        final String addAccountNotCurrency = "INSERT INTO \"account\" (name, balance, last_update_date_time, account_type) VALUES (?, ?, ?, ?)";
         final String addCurrency = "INSERT INTO \"currency\" (code, name) VALUES (?, ?)";
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pstmtAccount = con.prepareStatement(addAccount, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement pstmtAccountNotCurrency = con.prepareStatement(addAccountNotCurrency, Statement.RETURN_GENERATED_KEYS);
@@ -80,31 +81,48 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
         ) {
 
             if (toSave.getCurrency() != null) {
-                Account savedAccount = toAccount(toSave, pstmtAccount, pstmtCurrency);
-                int rows = pstmtAccount.executeUpdate();
-                if (rows > 0) {
-                    try (ResultSet keys = pstmtAccount.getGeneratedKeys()) {
-                        if (keys.next()) {
-                            Long generatedId = keys.getLong(1);
-                            savedAccount.setId(generatedId);
-                            return savedAccount;
+                updateCurrencyIfNecessary(pstmtCurrency, toSave.getCurrency());
+                int rowsCurrency = pstmtCurrency.executeUpdate();
+
+                if (rowsCurrency > 0) {
+                    try (ResultSet keysCurrency = pstmtCurrency.getGeneratedKeys()) {
+                        if (keysCurrency.next()) {
+                            Long generatedCurrencyId = keysCurrency.getLong(1);
+                            toSave.getCurrency().setId(generatedCurrencyId);
+
+                            updateAccount(toSave, pstmtAccount);
+                            int rowsAccount = pstmtAccount.executeUpdate();
+                            if (rowsAccount > 0) {
+                                try (ResultSet keysAccount = pstmtAccount.getGeneratedKeys()) {
+                                    if (keysAccount.next()) {
+                                        Long generatedAccountId = keysAccount.getLong(1);
+
+                                        toSave.setId(generatedAccountId);
+                                        return toSave;
+                                    }
+                                }
+                            }
                         }
-                        throw new RuntimeException("Failed to retrieve generated ID for Account");
                     }
                 }
             } else {
+                // Insert account without currency
                 pstmtAccountNotCurrency.setString(1, String.valueOf(toSave.getName()));
                 pstmtAccountNotCurrency.setDouble(2, toSave.getBalance());
                 pstmtAccountNotCurrency.setTimestamp(3, Timestamp.valueOf(toSave.getLastUpdateDateTime()));
                 pstmtAccountNotCurrency.setString(4, String.valueOf(toSave.getAccount_type()));
+
                 int rows = pstmtAccountNotCurrency.executeUpdate();
+
+                // Check if the account insertion was successful
                 if (rows > 0) {
-                  try ( ResultSet keys = pstmtAccount.getGeneratedKeys()){
-                      Long generatedId = keys.getLong(1);
-                      toSave.setId(generatedId);
-                      return toSave;
-                  }catch (SQLException e){
-                        throw new RuntimeException(e);
+                    try (ResultSet keys = pstmtAccountNotCurrency.getGeneratedKeys()) {
+                        if (keys.next()) {
+                            // Get the generated account ID
+                            Long generatedId = keys.getLong(1);
+                            toSave.setId(generatedId);
+                            return toSave;
+                        }
                     }
                 }
             }
@@ -114,6 +132,7 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
             throw new RuntimeException(e);
         }
     }
+
 
     private Account toAccount(Account toSave, PreparedStatement pstmtAccount, PreparedStatement pstmtCurrency) throws SQLException {
         saveCurrencyIfNecessary(pstmtCurrency, toSave.getCurrency());
@@ -219,7 +238,9 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     private void toCurrency(PreparedStatement pstmt, Currency currency) throws SQLException {
         pstmt.setString(1, String.valueOf(currency.getCode()));
         pstmt.setString(2, String.valueOf(currency.getName()));
-        pstmt.setLong(3, currency.getId());
+        if (currency.getId() != null) {
+            pstmt.setLong(3, currency.getId());
+        }
         int rows = pstmt.executeUpdate();
         if (rows > 0) {
             if (currency.getId() == null) {
