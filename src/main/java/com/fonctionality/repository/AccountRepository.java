@@ -4,7 +4,6 @@ import com.fonctionality.config.DatabaseConnection;
 import com.fonctionality.entity.*;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,8 +201,8 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
             } else {
                 throw new RuntimeException("Currency not find");
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch ( SQLException e ) {
+            throw new RuntimeException ( e );
         }
     }
 
