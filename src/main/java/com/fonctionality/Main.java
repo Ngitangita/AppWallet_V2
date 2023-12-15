@@ -18,6 +18,7 @@ public class Main {
         accountService.carryOfTransfer ( credit, debit, 1233 );
         System.out.println(accountRepository.findAll());
 
+
     }
 
 
