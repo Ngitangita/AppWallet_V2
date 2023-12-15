@@ -15,7 +15,7 @@ public class Transaction {
     private Long id;
     private String label;
     private Double amount;
-    private LocalDateTime dateTime;
+    public LocalDateTime dateTime;
     private TypeTransaction transactionType;
     private Account account;
 }
