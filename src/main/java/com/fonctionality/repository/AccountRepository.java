@@ -18,7 +18,7 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     @Override
     public List<Account> findAll() {
         List<Account> accounts = new ArrayList<>();
-        final String selectQuery = "SELECT id, name, balance, currency_id, last_update_date_time, account_type FROM \"account\"";
+        final String selectQuery = "SELECT * FROM \"account\"";
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pstmt = con.prepareStatement(selectQuery)
@@ -165,22 +165,24 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     @Override
     public Account findById(Long id) {
         try (Connection con = DatabaseConnection.getConnection()) {
-            final String query = "SELECT * FROM \"currency\" WHERE id = ?";
+            final String query = "SELECT * FROM \"account\" WHERE id = ?";
             PreparedStatement pstmt = con.prepareStatement(query);
             pstmt.setLong(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                Currency currency = this.currencyRepository.findById(rs.getLong("currency_id"));
-                return Account.builder()
+                long currencyId = rs.getLong("currency_id");
+                Currency currency = (currencyId != 0L) ? this.currencyRepository.findById(currencyId) : null;
+               return Account.builder()
                         .id(rs.getLong("id"))
-                        .name(AccountName.valueOf(rs.getString("name")))
+                        .name(AccountName.valueOf(rs.getString("name").toUpperCase().replace(" ", "_")))
                         .balance(rs.getDouble("balance"))
                         .currency(currency)
-                        .lastUpdateDateTime((LocalDateTime) rs.getObject("last_update_date_time"))
-                        .account_type(TypeAccount.valueOf(rs.getString("account_type")))
+                        .lastUpdateDateTime(rs.getTimestamp("last_update_date_time").toLocalDateTime())
+                        .account_type(TypeAccount.valueOf(rs.getString("account_type").toUpperCase().replace(" ", "_")))
                         .build();
+            } else {
+                throw new RuntimeException("Currency not find");
             }
-            throw new RuntimeException("Currency not find");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
