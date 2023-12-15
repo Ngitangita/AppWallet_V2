@@ -68,24 +68,44 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     @Override
     public Account save(Account toSave) {
         final String addAccount = "INSERT INTO \"account\" (name, balance, last_update_date_time, currency_id, account_type) VALUES (?, ?, ?, ?, ?)";
+        final String addAccountNotCurrency = "INSERT INTO \"account\" (name, balance, last_update_date_time, account_type) VALUES (?, ?, ?,  ?)";
         final String addCurrency = "INSERT INTO \"currency\" (code, name) VALUES (?, ?)";
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pstmtAccount = con.prepareStatement(addAccount, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement pstmtAccountNotCurrency = con.prepareStatement(addAccountNotCurrency, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement pstmtCurrency = con.prepareStatement(addCurrency, Statement.RETURN_GENERATED_KEYS)
         ) {
 
-            Account savedAccount = toAccount(toSave, pstmtAccount, pstmtCurrency);
-            int rows = pstmtAccount.executeUpdate();
-            if (rows > 0) {
-                try (ResultSet keys = pstmtAccount.getGeneratedKeys()) {
-                    if (keys.next()) {
-                        Long generatedId = keys.getLong(1);
-                        savedAccount.setId(generatedId);
-                        return savedAccount;
+            if (toSave.getCurrency() != null) {
+                Account savedAccount = toAccount(toSave, pstmtAccount, pstmtCurrency);
+                int rows = pstmtAccount.executeUpdate();
+                if (rows > 0) {
+                    try (ResultSet keys = pstmtAccount.getGeneratedKeys()) {
+                        if (keys.next()) {
+                            Long generatedId = keys.getLong(1);
+                            savedAccount.setId(generatedId);
+                            return savedAccount;
+                        }
+                        throw new RuntimeException("Failed to retrieve generated ID for Account");
                     }
-                    throw new RuntimeException("Failed to retrieve generated ID for Account");
+                }
+            } else {
+                pstmtAccountNotCurrency.setString(1, String.valueOf(toSave.getName()));
+                pstmtAccountNotCurrency.setDouble(2, toSave.getBalance());
+                pstmtAccountNotCurrency.setTimestamp(3, Timestamp.valueOf(toSave.getLastUpdateDateTime()));
+                pstmtAccountNotCurrency.setString(4, String.valueOf(toSave.getAccount_type()));
+                int rows = pstmtAccountNotCurrency.executeUpdate();
+                if (rows > 0) {
+                  try ( ResultSet keys = pstmtAccount.getGeneratedKeys()){
+                      Long generatedId = keys.getLong(1);
+                      toSave.setId(generatedId);
+                      return toSave;
+                  }catch (SQLException e){
+                        throw new RuntimeException(e);
+                    }
                 }
             }
+
             throw new RuntimeException("Error saving account");
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -103,18 +123,34 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
         try (Connection con = DatabaseConnection.getConnection()) {
             final String updateCurrency = "UPDATE \"currency\" SET code = ?, name = ? WHERE id = ?";
             final String updateAccount = "UPDATE \"account\" SET name = ?, balance = ?, last_update_date_time = ?, currency_id = ?, account_type = ? WHERE id = ?";
+            final String updateAccountNotCurrency = "UPDATE \"account\" SET name = ?, balance = ?, last_update_date_time = ?, account_type = ? WHERE id = ?";
             try (PreparedStatement pstmtAccount = con.prepareStatement(updateAccount);
-                 PreparedStatement pstmtCurrency = con.prepareStatement(updateCurrency)
+                 PreparedStatement pstmtCurrency = con.prepareStatement(updateCurrency);
+                 PreparedStatement pstmtAccountNotCurrency = con.prepareStatement(updateAccountNotCurrency)
             ) {
-                updateCurrencyIfNecessary(pstmtCurrency, toUpdate.getCurrency());
-                updateAccount(toUpdate, pstmtAccount);
-                pstmtAccount.setLong(6, toUpdate.getId());
-                int rows = pstmtAccount.executeUpdate();
-                if (rows > 0) {
-                    return toUpdate;
-                } else {
-                    throw new RuntimeException("Account update failed. Account not found with id: " + toUpdate.getId());
-                }
+               if (toUpdate.getCurrency() != null) {
+                   updateCurrencyIfNecessary(pstmtCurrency, toUpdate.getCurrency());
+                   updateAccount(toUpdate, pstmtAccount);
+                   pstmtAccount.setLong(6, toUpdate.getId());
+                   int rows = pstmtAccount.executeUpdate();
+                   if (rows > 0) {
+                       return toUpdate;
+                   } else {
+                       throw new RuntimeException("Account update failed. Account not found with id: " + toUpdate.getId());
+                   }
+               } else {
+                   pstmtAccountNotCurrency.setString(1, String.valueOf(toUpdate.getName()));
+                   pstmtAccountNotCurrency.setDouble(2, toUpdate.getBalance());
+                   pstmtAccountNotCurrency.setTimestamp(3, Timestamp.valueOf(toUpdate.getLastUpdateDateTime()));
+                   pstmtAccountNotCurrency.setString(4, String.valueOf(toUpdate.getAccount_type()));
+                   pstmtAccountNotCurrency.setLong(5, toUpdate.getId());
+                   int rows = pstmtAccountNotCurrency.executeUpdate();
+                   if (rows > 0) {
+                       return toUpdate;
+                   } else {
+                       throw new RuntimeException("Account update failed. Account not found with id: " + toUpdate.getId());
+                   }
+               }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error updating account", e);

@@ -1,13 +1,17 @@
 package com.fonctionality;
 
+import com.fonctionality.entity.Transaction;
+import com.fonctionality.repository.AccountRepository;
 import com.fonctionality.repository.CurrencyRepository;
+import com.fonctionality.repository.TransactionRepository;
 
 public class Main {
     public static void main(String[] args){
-        CurrencyRepository cr = new CurrencyRepository();
+        CurrencyRepository currencyRepository = new CurrencyRepository();
+        AccountRepository accountRepository = new AccountRepository(currencyRepository);
+        TransactionRepository transactionRTransaction = new TransactionRepository(accountRepository);
 
-        System.out.println(cr.findAll());
-        System.out.println(cr.findById(1L));
+        System.out.println(transactionRTransaction.findAll());
     }
 
 
