@@ -23,6 +23,10 @@ public class Account {
     private Currency currency;
     private TypeAccount account_type;
 
+    private List<TransferHistory> debitHistory = new ArrayList<>();
+
+    private List<TransferHistory> creditHistory = new ArrayList<>();
+
     public void addTransaction(Transaction ts) {
         if (!this.transactions.contains(ts)) {
             this.transactions.add(ts);
@@ -37,14 +41,32 @@ public class Account {
         }
     }
 
-    public void credit (Account account, double amount) {
+    public void credit(Account account, double amount) {
         this.balance -= amount;
         account.setBalance(account.getBalance() + amount);
+
+        TransferHistory transfer = TransferHistory.builder()
+                .debitTransaction(this)
+                .creditTransaction(account)
+                .transferDate(LocalDateTime.now())
+                .build();
+
+        this.debitHistory.add(transfer);
+        account.creditHistory.add(transfer);
     }
 
     public void debit(Account account, double amount) {
         this.balance += amount;
         account.setBalance(account.getBalance() - amount);
+
+        TransferHistory transfer = TransferHistory.builder()
+                .debitTransaction(account)
+                .creditTransaction(this)
+                .transferDate(LocalDateTime.now())
+                .build();
+
+        this.creditHistory.add(transfer);
+        account.debitHistory.add(transfer);
     }
 
 

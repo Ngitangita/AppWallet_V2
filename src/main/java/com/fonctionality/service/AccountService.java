@@ -1,9 +1,13 @@
 package com.fonctionality.service;
 
+import com.fonctionality.dto.response.SoldWithDate;
 import com.fonctionality.entity.Account;
+import com.fonctionality.entity.Transaction;
 import com.fonctionality.entity.TypeAccount;
 import com.fonctionality.repository.AccountRepository;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AccountService {
@@ -33,7 +37,6 @@ public class AccountService {
             throw new RuntimeException ( "Cannot transfer money to the same account." );
         }
     }
-
 
 
 }

@@ -47,6 +47,24 @@
         ('New shoe', 20000, '2023-12-06 4:00 PM', 'Debit', 2),
         ('Salary', 40000, '2023-12-03 8:00 PM', 'Credit', 3);
 
+      -- Inserting a transaction transfer history
+        CREATE TABLE "transfer_history" (
+            id SERIAL PRIMARY KEY,
+            debitTransaction_id INT ,
+            creditTransaction_id INT,
+            transferDate TIMESTAMP,
+            FOREIGN KEY (debitTransaction_id) REFERENCES "account"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+            FOREIGN KEY (creditTransaction_id) REFERENCES "account"(id) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+
+     CREATE TABLE "transaction_category" (
+            id SERIAL PRIMARY KEY,
+            transaction_id INT,
+            name VARCHAR(299),
+            FOREIGN KEY (transaction_id) REFERENCES "transaction"(id) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+
+
 
 
 

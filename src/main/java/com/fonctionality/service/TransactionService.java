@@ -7,7 +7,9 @@ import com.fonctionality.entity.Transaction;
 import com.fonctionality.repository.TransactionRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class TransactionService {
 
@@ -28,6 +30,22 @@ public class TransactionService {
         );
     }
 
+
+    public List<SoldWithDate> getBalanceHistory(Account account, LocalDateTime startDate, LocalDateTime endDate) {
+        List<SoldWithDate> balanceHistories =  new ArrayList<>();
+        List<Transaction> transactions = this.transactionRepository.findAll();
+        for (Transaction transaction : transactions) {
+            if (transaction.getDateTime() >= startDate && transaction.getDateTime() <= endDate && Objects.equals(transaction.getAccount().getId(), account.getId())){
+                SoldWithDate balanceHistory = new SoldWithDate(
+                        transaction.getDateTime(),
+                        transaction.getAmount()
+                );
+                balanceHistories.add(balanceHistory);
+            }
+            }
+        return balanceHistories;
+        }
+    }
 
 }
 
