@@ -11,15 +11,10 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args){
-        List<Currency> currency = List.of(Currency.builder()
-                .id(3L)
-                .name(NameCurrency.EURO)
-                .code(CodeCurrency.EUR)
-                .build());
         CurrencyRepository currencyRepository = new CurrencyRepository();
         AccountRepository accountRepository = new AccountRepository(currencyRepository);
         TransactionRepository transactionRTransaction = new TransactionRepository(accountRepository);
-        System.out.println(currencyRepository.updateAll(currency));
+        System.out.println(accountRepository.findAll());
 
     }
 
