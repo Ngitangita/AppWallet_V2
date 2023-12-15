@@ -13,11 +13,9 @@ public class Main {
         AccountRepository accountRepository = new AccountRepository(currencyRepository);
         TransactionRepository transactionRTransaction = new TransactionRepository(accountRepository);
         AccountService accountService = new AccountService ( accountRepository );
-        Account debit = accountRepository.findById ( 1L );
-        Account credit = accountRepository.findById ( 2L );
-        accountService.carryOfTransfer ( credit, debit, 1233 );
-        System.out.println(accountRepository.findAll());
-
+        Account debit = accountRepository.findById ( 3L );
+        Account credit = accountRepository.findById ( 4L );
+        System.out.println(accountService.carryOfTransfer(credit, debit, 203));
 
     }
 

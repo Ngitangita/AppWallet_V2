@@ -220,13 +220,17 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
     private void toCurrency(PreparedStatement pstmt, Currency currency) throws SQLException {
         pstmt.setString(1, String.valueOf(currency.getCode()));
         pstmt.setString(2, String.valueOf(currency.getName()));
+        pstmt.setLong(3, currency.getId());
         int rows = pstmt.executeUpdate();
         if (rows > 0) {
-            try (ResultSet keys = pstmt.getGeneratedKeys()) {
-                if (keys.next()) {
-                    currency.setId(keys.getLong(1));
+            if (currency.getId() == null) {
+                try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        currency.setId(keys.getLong(1));
+                    } else {
+                        throw new RuntimeException("Failed to retrieve generated ID for currency");
+                    }
                 }
-                throw new RuntimeException("Failed to retrieve generated ID for currency");
             }
         } else {
             throw new RuntimeException("Currency creation failed");

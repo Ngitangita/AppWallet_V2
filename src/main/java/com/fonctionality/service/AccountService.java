@@ -21,7 +21,7 @@ public class AccountService {
             return List.of (account1, account  );
         } else {
             if (sender.getBalance () - amount >= 0) {
-                recipient.debit ( sender, amount );
+                sender.credit ( recipient, amount );
                 Account account = this.accountRepository.update ( sender );
                 Account account1 = this.accountRepository.update ( recipient );
                 return List.of (account1, account  );

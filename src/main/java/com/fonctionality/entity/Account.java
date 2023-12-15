@@ -39,12 +39,12 @@ public class Account {
 
     public void credit (Account account, double amount) {
         this.balance -= amount;
-        account.balance += amount;
+        account.setBalance(account.getBalance() + amount);
     }
 
     public void debit(Account account, double amount) {
         this.balance += amount;
-        account.balance -= amount;
+        account.setBalance(account.getBalance() - amount);
     }
 
 
