@@ -15,8 +15,8 @@
         CREATE TABLE IF NOT EXISTS "account" (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255),
-            balance float,
-            last_update_date_time timestamp,
+            balance FLOAT,
+            last_update_date_time TIMESTAMP,
             currency_id INT,
             account_type VARCHAR(20),
             FOREIGN KEY ( currency_id ) REFERENCES "currency"(id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -33,8 +33,8 @@
         CREATE TABLE IF NOT EXISTS "transaction" (
             id serial PRIMARY KEY,
             label VARCHAR(255),
-            amount float,
-            date_time timestamp,
+            amount FLOAT,
+            date_time TIMESTAMP,
             transaction_type VARCHAR(10),
             account_id INT,
             FOREIGN KEY (account_id) REFERENCES "account"(id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -48,7 +48,7 @@
         ('Salary', 40000, '2023-12-03 8:00 PM', 'Credit', 3);
 
       -- Inserting a transaction transfer history
-        CREATE TABLE "transfer_history" (
+        CREATE TABLE  IF NOT EXISTS "transfer_history" (
             id SERIAL PRIMARY KEY,
             debitTransaction_id INT ,
             creditTransaction_id INT,
@@ -57,12 +57,16 @@
             FOREIGN KEY (creditTransaction_id) REFERENCES "account"(id) ON DELETE CASCADE ON UPDATE CASCADE
         );
 
-     CREATE TABLE "transaction_category" (
+     CREATE TABLE IF NOT EXISTS "category" (
             id SERIAL PRIMARY KEY,
             transaction_id INT,
             name VARCHAR(299),
+            type_transaction VARCHAR(200) CHECK ( type_transaction IN ('credit', 'debit') )
             FOREIGN KEY (transaction_id) REFERENCES "transaction"(id) ON DELETE CASCADE ON UPDATE CASCADE
         );
+
+
+
 
 
 

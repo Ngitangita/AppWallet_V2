@@ -30,7 +30,6 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                         .label(rs.getString("label"))
                         .dateTime(rs.getTimestamp("date_time").toLocalDateTime())
                         .amount(rs.getDouble("amount"))
-                        .transactionType(TypeTransaction.valueOf(rs.getString("transaction_type").toUpperCase()))
                         .account(account)
                         .build();
                 transactions.add(transaction);
@@ -85,7 +84,6 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                 pstmt.setString(1, toSave.getLabel());
                 pstmt.setDouble(2, toSave.getAmount());
                 pstmt.setTimestamp(3, Timestamp.valueOf(toSave.getDateTime()));
-                pstmt.setString(4, toSave.getTransactionType().name());
 
                 if (toSave.getAccount().getId() != null) {
                     pstmt.setLong(5, toSave.getAccount().getId());
@@ -138,7 +136,6 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                 pstmtWithAccount.setString(1, toUpdate.getLabel());
                 pstmtWithAccount.setDouble(2, toUpdate.getAmount());
                 pstmtWithAccount.setTimestamp(3, Timestamp.valueOf(toUpdate.getDateTime()));
-                pstmtWithAccount.setString(4, String.valueOf(toUpdate.getTransactionType()));
 
                 if (toUpdate.getAccount().getId() != null) {
                     pstmtWithAccount.setLong(5, toUpdate.getAccount().getId());
@@ -157,7 +154,6 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                 pstmtWithoutAccount.setString(1, toUpdate.getLabel());
                 pstmtWithoutAccount.setDouble(2, toUpdate.getAmount());
                 pstmtWithoutAccount.setTimestamp(3, Timestamp.valueOf(toUpdate.getDateTime()));
-                pstmtWithoutAccount.setString(4, String.valueOf(toUpdate.getTransactionType()));
                 pstmtWithoutAccount.setLong(5, toUpdate.getId());
 
                 int rowsWithoutAccount = pstmtWithoutAccount.executeUpdate();
@@ -188,7 +184,6 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                         .label(rs.getString("label"))
                         .dateTime(rs.getTimestamp("date_time").toLocalDateTime())
                         .amount(rs.getDouble("amount"))
-                        .transactionType(TypeTransaction.valueOf(rs.getString("transaction_type").toUpperCase()))
                         .account(account)
                         .build();
             }

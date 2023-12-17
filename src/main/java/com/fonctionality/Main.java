@@ -27,7 +27,6 @@ public class Main {
                 .build();
         Transaction transaction = Transaction.builder()
                 .id(6L)
-                .transactionType(TypeTransaction.CREDIT)
                 .amount(1111111.0)
                 .label("Ok UPDATE1")
                 .account(account)

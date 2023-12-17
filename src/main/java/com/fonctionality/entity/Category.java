@@ -2,6 +2,7 @@ package com.fonctionality.entity;
 
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -11,8 +12,9 @@ import java.util.List;
 @EqualsAndHashCode
 @Builder
 @ToString
-public class TransactionCategory {
+public class Category {
     private Long id;
     private String name;
-    private List<Transaction> transactions;
+    private TypeTransaction typeTransaction;
+    private List<Transaction> transactions = new ArrayList<> (  );
 }

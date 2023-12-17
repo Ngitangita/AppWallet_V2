@@ -11,7 +11,6 @@ public record TransactionResponse(
         String label,
         Double amount,
         LocalDateTime dateTime,
-        TypeTransaction transactionType,
         AccountResponse account
 ) {
 
@@ -22,7 +21,6 @@ public record TransactionResponse(
                 transaction.getLabel(),
                 transaction.getAmount(),
                 transaction.getDateTime(),
-                transaction.getTransactionType(),
                 accountResponse
         );
     }
