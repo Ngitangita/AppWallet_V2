@@ -61,7 +61,7 @@
             id SERIAL PRIMARY KEY,
             transaction_id INT,
             name VARCHAR(299),
-            type_transaction VARCHAR(200) CHECK ( type_transaction IN ('credit', 'debit') )
+            type_transaction VARCHAR(200) CHECK ( type_transaction IN ('credit', 'debit') ),
             FOREIGN KEY (transaction_id) REFERENCES "transaction"(id) ON DELETE CASCADE ON UPDATE CASCADE
         );
 
