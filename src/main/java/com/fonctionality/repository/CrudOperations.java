@@ -5,10 +5,7 @@ import java.util.List;
 public interface CrudOperations <T, I>{
     List<T> findAll();
 
-
-
     List<T> saveAll(List<T> toSaves);
-
 
     List<T> updateAll(List<T> toUpdates);
 
