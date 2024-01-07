@@ -1,10 +1,15 @@
 package repositories;
 
 import entitries.TransferHistory;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 
+@AllArgsConstructor
 public class TransferHistoryRepository implements CrudOperations<TransferHistory, Long>{
+
+    private final TransactionRepository transactionRepository;
+
     @Override
     public List<TransferHistory> findAll(){
         return null;
