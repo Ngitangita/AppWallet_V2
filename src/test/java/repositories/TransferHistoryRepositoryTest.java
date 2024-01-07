@@ -1,7 +1,6 @@
 package repositories;
 
-import entitries.Account;
-import entitries.TransferHistory;
+import entitries.*;
 import exceptions.TransferHistoryError;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,9 +37,21 @@ public class TransferHistoryRepositoryTest {
 
 
     @Test
+    void testFindByIdTransactionSuccess() {
+        assertDoesNotThrow ( () -> {
+            Long id = 3L;
+            TransferHistory transfer = subject.findById (id);
+            assertNotNull(transfer.getId (), "transfer history id should not be null");
+            assertEquals ( TypeAccount.BANK, transfer.getDebitTransaction ( ).getAccount_type (), "The type of account  should be equals" );
+            assertNotNull (transfer.getDebitTransaction (),  "the account of debit should be not null");
+        } );
+    }
+
+
+    @Test
     void testSaveTransferHistorySuccess() {
         assertDoesNotThrow ( () -> {
-            Long creditId = 12L;
+            Long creditId = 1L;
             Long debitId = 13L;
             Account credit = accountRep.findById ( creditId );
             Account debit = accountRep.findById ( debitId );
@@ -82,6 +93,20 @@ public class TransferHistoryRepositoryTest {
         } );
     }
 
+
+    @Test
+    void testDeleteByIdTransferHistorySuccess() {
+        assertDoesNotThrow ( () -> {
+            Long id = 3L;
+            TransferHistory transferBeforeDeleted = subject.findById ( id );
+            List<TransferHistory> transfersBeforeDeleted = subject.findAll();
+            TransferHistory transferAfterDeleted = subject.deleteById ( id );
+            List<TransferHistory>transfersAfterDeleted = subject.findAll();
+
+            assertEquals (transferBeforeDeleted.getId (),transferAfterDeleted.getId () , "the two id should  be equals");
+            assertNotEquals (transfersBeforeDeleted.size () ,transfersAfterDeleted.size (),  "the size of two list  should be not equals");
+        } );
+    }
 
     @Test
     void testTransferHistorySQLException() {

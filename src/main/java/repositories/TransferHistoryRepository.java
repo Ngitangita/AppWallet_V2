@@ -179,7 +179,31 @@ public class TransferHistoryRepository implements CrudOperations<TransferHistory
 
     @Override
     public TransferHistory deleteById(Long id){
-        return null;
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        final String query = "DELETE FROM \"transfer_history\" WHERE id = ?";
+        TransferHistory transferHistory = this.findById(id);
+        try {
+            connection = DatabaseConnection.getConnection();
+            stmt = connection.prepareStatement(query);
+            stmt.setLong(1, id);
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                return transferHistory;
+            }
+            throw new TransferHistoryError ("transfer history not find");
+        } catch (SQLException e) {
+            e.printStackTrace ();
+            throw new TransferHistoryError ("transfer history not find");
+        }finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace ();
+                throw new TransferHistoryError ("Error closing database related resources ");
+            }
+        }
     }
 
     private void setTransferHistory(TransferHistory toSave, PreparedStatement stmt) throws SQLException {

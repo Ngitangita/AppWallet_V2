@@ -36,16 +36,18 @@
             amount FLOAT,
             date_time TIMESTAMP,
             transaction_type VARCHAR(10),
+            category_id INT,
             account_id INT,
+            FOREIGN KEY (category_id) REFERENCES "category"(id) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (account_id) REFERENCES "account"(id) ON DELETE CASCADE ON UPDATE CASCADE
         );
 
         -- Inserting a transaction
-        INSERT INTO "transaction" (label, amount, date_time, transaction_type, account_id)
-        VALUES ('Salary', 100000, '2023-12-01 12:15 AM', 'CREDIT', 1),
-        ('Christmas gift', 50000, '2023-12-02 2:00 PM', 'DEBIT', 4),
-        ('New shoe', 20000, '2023-12-06 4:00 PM', 'DEBIT', 2),
-        ('Salary', 40000, '2023-12-03 8:00 PM', 'CREDIT', 3);
+        INSERT INTO "transaction" (label, amount, date_time, transaction_type, account_id, category_id)
+        VALUES ('Salary', 100000, '2023-12-01 12:15 AM', 'CREDIT', 1, 1),
+        ('Christmas gift', 50000, '2023-12-02 2:00 PM', 'DEBIT', 4, 1),
+        ('New shoe', 20000, '2023-12-06 4:00 PM', 'DEBIT', 2, 2),
+        ('Salary', 40000, '2023-12-03 8:00 PM', 'CREDIT', 3, 2);
 
       -- Inserting a transaction transfer history
         CREATE TABLE  IF NOT EXISTS "transfer_history" (
@@ -59,11 +61,14 @@
 
      CREATE TABLE IF NOT EXISTS "category" (
             id SERIAL PRIMARY KEY,
-            transaction_id INT,
             name VARCHAR(299),
-            type_category VARCHAR(200),
-            FOREIGN KEY (transaction_id) REFERENCES "transaction"(id) ON DELETE CASCADE ON UPDATE CASCADE
+            type_category VARCHAR(200)
         );
+
+    INSERT INTO "category" (name, type_category) VALUES
+     ('Restaurant', 'FOOD'),
+     ('Téléphone et Multimédia', 'ENTERTAINMENT');
+
 
 
 
