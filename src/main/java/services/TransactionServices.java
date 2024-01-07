@@ -4,6 +4,7 @@ import entitries.Account;
 import entitries.Transaction;
 import entitries.TypeAccount;
 import entitries.TypeTransaction;
+import exceptions.AccountError;
 import exceptions.TransactionError;
 import lombok.AllArgsConstructor;
 import repositories.AccountRepository;
@@ -19,31 +20,36 @@ public class TransactionServices {
 
     public Account creditOrDebitSold(Long id, TypeTransaction type, double amount, String label) {
         final Account account = this.accountRepository.findById(id);
-        final double oldSold = account.getBalance();
+        if (account != null){
+            final double oldSold = account.getBalance();
 
-        if (type.equals(TypeTransaction.DEBIT)) {
-            if (!account.getAccount_type ().equals(TypeAccount.BANK) && amount > oldSold) {
-                throw new TransactionError("Insufficient balance for a debit transaction.");
+            if (type.equals(TypeTransaction.DEBIT)) {
+                if (!account.getAccount_type ().equals(TypeAccount.BANK) && amount > oldSold) {
+                    throw new TransactionError("Insufficient balance for a debit transaction.");
+                }
+                account.setBalance(oldSold - amount);
+                this.accountRepository.update(account);
+            } else {
+                account.setBalance(oldSold + amount);
+                this.accountRepository.update(account);
             }
-            account.setBalance(oldSold - amount);
-            this.accountRepository.update(account);
-        } else {
-            account.setBalance(oldSold + amount);
-            this.accountRepository.update(account);
+
+            Transaction newTransaction = Transaction.builder()
+                    .account(account)
+                    .typeTransaction(type)
+                    .dateTime(LocalDateTime.now())
+                    .label(label)
+                    .amount(amount)
+                    .build();
+
+            this.transactionRepository.save ( newTransaction );
+
+            List<Transaction> transactions = this.transactionRepository.findAll ()
+                    .stream( ).filter ( t -> (t.getAccount () != null) && t.getAccount ().getId ().equals ( account.getId () ) )
+                    .toList ( );
+            account.setTransactions ( transactions );
+            return account;
         }
-
-        Transaction newTransaction = Transaction.builder()
-                .account(account)
-                .typeTransaction(type)
-                .dateTime(LocalDateTime.now())
-                .label(label)
-                .amount(amount)
-                .build();
-
-       this.transactionRepository.save ( newTransaction );
-
-        List<Transaction> transactions = this.transactionRepository.findAll ().stream( ).filter ( t -> t.getAccount ().getId ().equals ( account.getId () ) ).toList ( );
-        account.setTransactions ( transactions );
-        return account;
+        throw new  AccountError ( "Account id "+ id + "not fount" );
     }
 }
