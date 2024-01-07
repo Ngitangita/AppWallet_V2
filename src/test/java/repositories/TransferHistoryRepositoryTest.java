@@ -28,13 +28,14 @@ public class TransferHistoryRepositoryTest {
     @Test
     void testFindAllTransferHistorySuccess() {
         assertDoesNotThrow ( () -> {
-            int size = 1;
+            int size = 2;
             List<TransferHistory> transferHistories = subject.findAll();
             assertNotNull(transferHistories, "List of transferHistory should not be null");
-            assertTrue (transferHistories.isEmpty(), "List of transferHistory should not be empty");
+            assertFalse(transferHistories.isEmpty(), "List of transferHistory should not be empty");
             assertEquals(size, transferHistories.size(),  "List should contain four transferHistory");
         } );
     }
+
 
     @Test
     void testSaveTransferHistorySuccess() {
@@ -45,8 +46,8 @@ public class TransferHistoryRepositoryTest {
             Account debit = accountRep.findById ( debitId );
             TransferHistory transferHistory = TransferHistory.builder()
                     .transferDate ( LocalDateTime.now () )
-                    .creditTransaction ( credit )
-                    .debitTransaction ( debit )
+                    .creditTransaction ( debit )
+                    .debitTransaction ( credit )
                     .build();
             List<TransferHistory> beforeTransferHistories = subject.findAll();
             TransferHistory savedTransferHistory = subject.save ( transferHistory );
@@ -54,7 +55,30 @@ public class TransferHistoryRepositoryTest {
             assertNotNull(transferHistories, "List of transferHistory should not be null");
             assertNotNull (savedTransferHistory.getId (), "the id transfer history should  be not null");
             assertFalse (transferHistories.isEmpty(), "List of transferHistory should not be empty");
-            assertNotEquals(beforeTransferHistories.size(), transferHistories.size(),  "List should contain four transferHistory");
+            assertNotEquals(beforeTransferHistories.size(), transferHistories.size(),  "the size of the two lists  should be not equals");
+        } );
+    }
+
+
+    @Test
+    void testUpdateTransferHistorySuccess() {
+        assertDoesNotThrow ( () -> {
+            Long id = 4L;
+            Long creditId = 12L;
+            Long debitId = 13L;
+            Account credit = accountRep.findById ( creditId );
+            Account debit = accountRep.findById ( debitId );
+            TransferHistory transferHistory = TransferHistory.builder()
+                    .id ( id )
+                    .transferDate ( LocalDateTime.now () )
+                    .creditTransaction ( debit )
+                    .debitTransaction ( credit )
+                    .build();
+            List<TransferHistory> beforeTransferHistories = subject.findAll();
+            TransferHistory updatedTransferHistory = subject.update ( transferHistory );
+            List<TransferHistory> transferHistories = subject.findAll();
+            assertTrue (transferHistories.stream ().filter ( t -> t.getId ().equals ( updatedTransferHistory.getId()) ).toList ().size () != 0, "List of transferHistory should  be contain  updatedTransferHistory");
+            assertEquals(beforeTransferHistories.size(), transferHistories.size(),  "the size of the two lists  should be equals");
         } );
     }
 

@@ -3,6 +3,7 @@ package repositories;
 import config.DatabaseConnection;
 import entitries.Account;
 import entitries.TransferHistory;
+import exceptions.TransactionError;
 import exceptions.TransferHistoryError;
 import lombok.RequiredArgsConstructor;
 
@@ -51,12 +52,22 @@ public class TransferHistoryRepository implements CrudOperations<TransferHistory
 
     @Override
     public List<TransferHistory> saveAll(List<TransferHistory> toSaves){
-        return null;
+        List<TransferHistory> savedTransferHistories = new ArrayList<>();
+        for (TransferHistory transferHistory : toSaves) {
+            TransferHistory savedTransferHistory = this.save (transferHistory);
+            savedTransferHistories.add(savedTransferHistory);
+        }
+        return savedTransferHistories;
     }
 
     @Override
     public List<TransferHistory> updateAll(List<TransferHistory> toUpdates){
-        return null;
+        List<TransferHistory> updatedTransferHistories = new ArrayList<>();
+        for (TransferHistory transferHistory : toUpdates) {
+            TransferHistory updatedTransferHistory = this.update(transferHistory);
+            updatedTransferHistories.add(updatedTransferHistory);
+        }
+        return updatedTransferHistories;
     }
 
     @Override
@@ -102,12 +113,68 @@ public class TransferHistoryRepository implements CrudOperations<TransferHistory
 
     @Override
     public TransferHistory update(TransferHistory toUpdate){
-        return null;
+        final TransferHistory transferHistory = this.findById(toUpdate.getId());
+        if (toUpdate.getId() != null && transferHistory != null) {
+            Connection connection = null;
+            PreparedStatement stmt = null;
+            final String query = "UPDATE \"transfer_history\" SET  debit_transaction_id = ? , credit_transaction_id = ? , transfer_date = ? WHERE id = ?";
+            try {
+                connection = DatabaseConnection.getConnection();
+                stmt = connection.prepareStatement(query);
+                this.setTransferHistory ( toUpdate, stmt );
+                stmt.setLong(4, toUpdate.getId());
+                int rows = stmt.executeUpdate();
+                if (rows > 0) {
+                    return toUpdate;
+                }
+                throw new TransferHistoryError ("Error modifying transfer history");
+
+            } catch (SQLException e) {
+                e.printStackTrace ();
+                throw new TransferHistoryError ("Error modifying transfer history");
+            } finally {
+                try {
+                    if (stmt != null) stmt.close();
+                    if (connection != null) connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace ();
+                    throw new TransferHistoryError ("Error closing database related resources ");
+                }
+            }
+        }
+        throw new TransferHistoryError ("Error modifying transfer history");
     }
 
     @Override
     public TransferHistory findById(Long id){
-        return null;
+        final String query = "SELECT * FROM \"transfer_history\" WHERE id = ? ";
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try  {
+            connection = DatabaseConnection.getConnection();
+            stmt = connection.prepareStatement(query);
+            stmt.setLong ( 1, id );
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                long debitTransactionId = rs.getLong("debit_transaction_id");
+                long creditTransactionId = rs.getLong("credit_transaction_id");
+                Account debitTransaction = (debitTransactionId != 0L) ? this.accountRepository.findById(debitTransactionId) : null;
+                Account creditTransaction = (creditTransactionId != 0L) ? this.accountRepository.findById(creditTransactionId) : null;
+                return TransferHistory.builder()
+                        .id ( rs.getLong ( "id" ) )
+                        .transferDate ( rs.getTimestamp ( "transfer_date" ).toLocalDateTime ( ) )
+                        .debitTransaction ( debitTransaction )
+                        .creditTransaction ( creditTransaction )
+                        .build();
+            }
+            throw new TransactionError ("Error retrieving transaction from database");
+        } catch (SQLException e) {
+            e.printStackTrace ();
+            throw new TransactionError ("Error retrieving transaction from database");
+        } finally {
+            blockFinnally ( connection, stmt, rs );
+        }
     }
 
     @Override
@@ -119,8 +186,10 @@ public class TransferHistoryRepository implements CrudOperations<TransferHistory
         Account creditTransaction = toSave.getCreditTransaction ();
         Account debitTransaction = toSave.getDebitTransaction ();
         if (debitTransaction.getId () != null && creditTransaction.getId () != null){
-            stmt.setLong ( 1,  debitTransaction.getId ());
-            stmt.setLong ( 2,  creditTransaction.getId ());
+            Account debitUpdated = this.accountRepository.update ( debitTransaction );
+            Account creditUpdated = this.accountRepository.update ( creditTransaction );
+            stmt.setLong ( 1,  debitUpdated.getId ());
+            stmt.setLong ( 2,  creditUpdated.getId ());
         } else {
             Account accountSaved = this.accountRepository.save ( debitTransaction );
             Account accountSavedCredit = this.accountRepository.save ( creditTransaction );
