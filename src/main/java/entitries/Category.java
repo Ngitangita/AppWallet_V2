@@ -15,6 +15,6 @@ import java.util.List;
 public class Category {
     private Long id;
     private String name;
-    private TypeTransaction typeTransaction;
+    private TypeCategory categoryType;
     private List<Transaction> transactions = new ArrayList<> (  );
 }
