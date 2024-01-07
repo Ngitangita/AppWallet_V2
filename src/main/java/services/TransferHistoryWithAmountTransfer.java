@@ -1,18 +1,20 @@
-package entitries;
+package services;
 
+import entitries.Account;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Builder
 @ToString
-@EqualsAndHashCode
-public class TransferHistory {
-    private Long id;
+public class TransferHistoryWithAmountTransfer {
     private Account debitTransaction;
     private Account creditTransaction;
     private LocalDateTime transferDate;
+    private double amountTransfer;
 }
