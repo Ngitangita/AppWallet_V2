@@ -5,7 +5,6 @@ import entitries.Account;
 import entitries.Category;
 import entitries.Transaction;
 import entitries.TypeTransaction;
-import exceptions.AccountError;
 import exceptions.TransactionError;
 import lombok.AllArgsConstructor;
 
@@ -102,7 +101,7 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                     throw new TransactionError ("Error saving transaction");
                 }
             }
-            throw new AccountError ("Error saving transaction");
+            throw new TransactionError ("Error saving transaction");
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -113,7 +112,7 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
                 if (connection != null) connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
-                throw new AccountError ("Error closing database related resources ");
+                throw new TransactionError ("Error closing database related resources ");
             }
         }
     }
@@ -267,13 +266,7 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
         }
     }
 
-
-
     private void blockFinnally(Connection connection, PreparedStatement stmt, ResultSet rs){
-        finnally ( connection, stmt, rs );
-    }
-
-    static void finnally(Connection connection, PreparedStatement stmt, ResultSet rs){
         try {
             if (rs != null) rs.close();
             if (stmt != null) stmt.close();

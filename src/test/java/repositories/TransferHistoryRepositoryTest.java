@@ -27,7 +27,7 @@ public class TransferHistoryRepositoryTest {
     @Test
     void testFindAllTransferHistorySuccess() {
         assertDoesNotThrow ( () -> {
-            int size = 2;
+            int size = 3;
             List<TransferHistory> transferHistories = subject.findAll();
             assertNotNull(transferHistories, "List of transferHistory should not be null");
             assertFalse(transferHistories.isEmpty(), "List of transferHistory should not be empty");
@@ -37,12 +37,12 @@ public class TransferHistoryRepositoryTest {
 
 
     @Test
-    void testFindByIdTransactionSuccess() {
+    void testFindByIdTransferHistorySuccess() {
         assertDoesNotThrow ( () -> {
-            Long id = 3L;
+            Long id = 4L;
             TransferHistory transfer = subject.findById (id);
             assertNotNull(transfer.getId (), "transfer history id should not be null");
-            assertEquals ( TypeAccount.BANK, transfer.getDebitTransaction ( ).getAccount_type (), "The type of account  should be equals" );
+            assertEquals ( TypeAccount.CASH, transfer.getDebitTransaction ( ).getAccount_type (), "The type of account  should be equals" );
             assertNotNull (transfer.getDebitTransaction (),  "the account of debit should be not null");
         } );
     }
@@ -51,8 +51,8 @@ public class TransferHistoryRepositoryTest {
     @Test
     void testSaveTransferHistorySuccess() {
         assertDoesNotThrow ( () -> {
-            Long creditId = 1L;
-            Long debitId = 13L;
+            Long creditId = 11L;
+            Long debitId = 10L;
             Account credit = accountRep.findById ( creditId );
             Account debit = accountRep.findById ( debitId );
             TransferHistory transferHistory = TransferHistory.builder()
@@ -74,7 +74,7 @@ public class TransferHistoryRepositoryTest {
     @Test
     void testUpdateTransferHistorySuccess() {
         assertDoesNotThrow ( () -> {
-            Long id = 4L;
+            Long id = 7L;
             Long creditId = 12L;
             Long debitId = 13L;
             Account credit = accountRep.findById ( creditId );
@@ -97,7 +97,7 @@ public class TransferHistoryRepositoryTest {
     @Test
     void testDeleteByIdTransferHistorySuccess() {
         assertDoesNotThrow ( () -> {
-            Long id = 3L;
+            Long id = 5L;
             TransferHistory transferBeforeDeleted = subject.findById ( id );
             List<TransferHistory> transfersBeforeDeleted = subject.findAll();
             TransferHistory transferAfterDeleted = subject.deleteById ( id );

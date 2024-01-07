@@ -5,13 +5,13 @@ import entitries.Account;
 import entitries.TransferHistory;
 import exceptions.TransactionError;
 import exceptions.TransferHistoryError;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TransferHistoryRepository implements CrudOperations<TransferHistory, Long>{
 
     private final AccountRepository accountRepository;
@@ -225,12 +225,13 @@ public class TransferHistoryRepository implements CrudOperations<TransferHistory
 
 
     private void blockFinnally(Connection connection, PreparedStatement stmt, ResultSet rs){
-        createStmt ( connection, stmt, rs );
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+            if (connection != null) connection.close();
+        } catch ( SQLException e) {
+            e.printStackTrace ();
+            throw new TransferHistoryError ("Error closing database related resources ");
+        }
     }
-
-    static void createStmt(Connection connection, PreparedStatement stmt, ResultSet rs){
-        TransactionRepository.finnally ( connection, stmt, rs );
-    }
-
-
 }

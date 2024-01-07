@@ -19,8 +19,9 @@ public class TransactionTest {
     @BeforeEach
     void setUp() {
         CurrencyRepository currencyRep = new CurrencyRepository ();
+        CategoryRepository categoryRep = new CategoryRepository ();
         AccountRepository accountRep = new AccountRepository ( currencyRep);
-        subject = new TransactionRepository ( accountRep );
+        subject = new TransactionRepository ( accountRep , categoryRep);
     }
 
 
@@ -39,7 +40,7 @@ public class TransactionTest {
     @Test
     void testFindByIdTransactionSuccess() {
         assertDoesNotThrow ( () -> {
-            Long id = 5L;
+            Long id = 4L;
             Transaction transaction = subject.findById (id);
             assertNotNull(transaction.getId (), "Account id should not be null");
             assertEquals ( TypeTransaction.CREDIT, transaction.getTypeTransaction ( ), "The type of transaction  should be equals" );
@@ -50,7 +51,13 @@ public class TransactionTest {
 
     @Test
      void testSaveTransactionSuccess() {
+        Category category =  Category.builder ( )
+                .name("Pomme")
+                .categoryType ( TypeCategory.FOOD )
+                .build ();
+
         Transaction transaction = Transaction.builder()
+                .category ( category )
                 .label("Sample Transaction")
                 .amount(100.0)
                 .dateTime(LocalDateTime.now())
@@ -58,12 +65,18 @@ public class TransactionTest {
                 .build();
         Transaction savedTransaction = subject.save(transaction);
         assertNotNull(savedTransaction.getId(), "Transaction id should not be null");
+        assertNotNull(savedTransaction.getCategory (), "category  should not be null");
     }
 
 
     @Test
     void testSaveTransactionWithAccountSuccess() {
+        Category category =  Category.builder ( )
+                .name("Pomme")
+                .categoryType ( TypeCategory.FOOD )
+                .build ();
         Transaction transaction = Transaction.builder()
+                .category ( category )
                 .label("try Transaction")
                 .amount(100.0)
                 .dateTime(LocalDateTime.now())
@@ -78,30 +91,45 @@ public class TransactionTest {
         Transaction savedTransaction = subject.save(transaction);
         assertNotNull(savedTransaction.getId(), "Transaction id should not be null");
         assertNotNull(savedTransaction.getAccount ().getId(), "Account id should not be null");
+        assertNotNull(savedTransaction.getCategory (), "category  should not be null");
     }
 
 
     @Test
     void testUpdateTransactionSuccess() {
-        Long id = 15L;
+        Long id = 1L;
+        Long categoryId = 1L;
+        Category category =  Category.builder ( )
+                .id ( categoryId )
+                .name("Pomme")
+                .categoryType ( TypeCategory.FOOD )
+                .build ();
         Transaction transaction = Transaction.builder()
                 .id(id)
+                .category ( category )
                 .label("Transaction")
                 .amount(100.0)
                 .dateTime(LocalDateTime.now())
                 .typeTransaction(TypeTransaction.DEBIT)
                 .build();
-        Transaction savedTransaction = subject.update (transaction);
-        assertEquals (savedTransaction.getId(), transaction.getId (), "The two id of transaction should  be equal");
-        assertEquals (savedTransaction.getTypeTransaction (), transaction.getTypeTransaction (), "The name of two transaction should  be not equal");
+        Transaction updatedTransaction = subject.update (transaction);
+        assertEquals (updatedTransaction.getId(), transaction.getId (), "The two id of transaction should  be equal");
+        assertEquals (updatedTransaction.getTypeTransaction (), transaction.getTypeTransaction (), "The name of two transaction should  be not equal");
     }
 
     @Test
     void testUpdateTransactionWithAccountSuccess() {
-        Long id = 17L;
-        Long accountId = 17L;
+        Long id = 4L;
+        Long accountId = 3L;
+        Long categoryId = 2L;
+        Category category =  Category.builder ( )
+                .id ( categoryId )
+                .name("Pomme")
+                .categoryType ( TypeCategory.FOOD )
+                .build ();
         Transaction transaction = Transaction.builder()
                 .id(id)
+                .category ( category )
                 .label("Update Transaction")
                 .amount(100.0)
                 .dateTime(LocalDateTime.now())
@@ -123,7 +151,7 @@ public class TransactionTest {
     @Test
     void testDeleteByIdTransactionSuccess() {
         assertDoesNotThrow ( () -> {
-            Long id = 12L;
+            Long id = 8L;
             Transaction transactionBeforeDeleted = subject.findById ( id );
             List<Transaction> transactionsBeforeDeleted = subject.findAll();
             Transaction transactionAfterDeleted = subject.deleteById ( id );

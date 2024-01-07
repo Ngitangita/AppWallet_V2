@@ -1,9 +1,12 @@
 package repositories;
 
 import config.DatabaseConnection;
-import entitries.*;
+import entitries.Account;
+import entitries.AccountName;
+import entitries.Currency;
+import entitries.TypeAccount;
 import exceptions.AccountError;
-import exceptions.CurrencyError;
+import lombok.AllArgsConstructor;
 
 
 import java.sql.*;
@@ -11,14 +14,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 public class AccountRepository  implements CrudOperations<Account, Long>{
     private final CurrencyRepository currencyRepository;
-
-
-    public AccountRepository(CurrencyRepository currencyRepository) {
-        this.currencyRepository = currencyRepository;
-    }
-
 
     @Override
     public List<Account> findAll(){
@@ -152,7 +150,7 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
                 }
             }
         }
-        throw new CurrencyError ("Error modifying currency");
+        throw new AccountError ("Error modifying account");
     }
 
 
@@ -204,10 +202,10 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
             if (rows > 0) {
                 return account;
             }
-            throw new AccountError ("Currency not find");
+            throw new AccountError ("Account not find");
         } catch (SQLException e) {
             e.printStackTrace ();
-            throw new AccountError ("Currency not find");
+            throw new AccountError ("Account not find");
         }finally {
             try {
                 if (stmt != null) stmt.close();
@@ -255,11 +253,13 @@ public class AccountRepository  implements CrudOperations<Account, Long>{
 
 
     private void blockFinnally(Connection connection, PreparedStatement stmt, ResultSet rs){
-        createStmt ( connection, stmt, rs );
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+            if (connection != null) connection.close();
+        } catch ( SQLException e) {
+            e.printStackTrace ();
+            throw new AccountError ("Error closing database related resources ");
+        }
     }
-
-    static void createStmt(Connection connection, PreparedStatement stmt, ResultSet rs){
-        TransactionRepository.finnally ( connection, stmt, rs );
-    }
-
 }

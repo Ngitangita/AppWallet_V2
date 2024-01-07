@@ -25,10 +25,11 @@ public class CurrencyTest {
     @Test
     void testFindAllCurrencySuccess() {
         assertDoesNotThrow ( () -> {
+            int size = 4;
             List<Currency> currencies = subject.findAll();
             assertNotNull(currencies, "List of currencies should not be null");
             assertFalse(currencies.isEmpty(), "List of currencies should not be empty");
-            assertEquals(2, currencies.size(),  "List should contain two currencies");
+            assertEquals(size, currencies.size(),  "List should contain two currencies");
         } );
     }
 
@@ -68,8 +69,8 @@ public class CurrencyTest {
             Long id = 2L;
             Currency currencyBeforeUpdated = subject.findById ( id );
             Currency currency = subject.findById ( id );
-            currency.setName ( NameCurrency.EURO );
-            currency.setCode ( CodeCurrency.EUR );
+            currency.setName ( NameCurrency.ARIARY );
+            currency.setCode ( CodeCurrency.AR );
             Currency currencyAfterUpdated = subject.update ( currency );
             List<Currency> currencies = subject.findAll();
 
@@ -83,7 +84,7 @@ public class CurrencyTest {
     @Test
     void testDeleteByIdCurrencySuccess() {
         assertDoesNotThrow ( () -> {
-            Long id = 4L;
+            Long id = 5L;
             Currency currencyBeforeDelete = subject.findById ( id );
             List<Currency> currenciesBeforeDeleted = subject.findAll();
             Currency currencyDeleted = subject.deleteById ( id );

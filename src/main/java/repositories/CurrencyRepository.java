@@ -5,12 +5,14 @@ import entitries.CodeCurrency;
 import entitries.Currency;
 import entitries.NameCurrency;
 import exceptions.CurrencyError;
+import lombok.NoArgsConstructor;
 
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor
 public class CurrencyRepository implements CrudOperations<Currency, Long>{
     @Override
     public List<Currency> findAll(){
@@ -39,7 +41,7 @@ public class CurrencyRepository implements CrudOperations<Currency, Long>{
             e.printStackTrace();
             throw new CurrencyError("Error retrieving currencies from database");
         } finally {
-            AccountRepository.createStmt ( connection, stmt, rs );
+            blockFinnally (   connection, stmt, rs );
         }
     }
 
@@ -166,7 +168,7 @@ public class CurrencyRepository implements CrudOperations<Currency, Long>{
             e.printStackTrace();
             throw new CurrencyError("Error retrieving currency from database");
         } finally {
-            AccountRepository.createStmt ( connection, stmt, rs );
+            blockFinnally ( connection, stmt, rs );
         }
     }
 
@@ -196,6 +198,16 @@ public class CurrencyRepository implements CrudOperations<Currency, Long>{
                 e.printStackTrace();
                 throw new CurrencyError("Error closing database related resources ");
             }
+        }
+    }
+    private void blockFinnally(Connection connection, PreparedStatement stmt, ResultSet rs){
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+            if (connection != null) connection.close();
+        } catch ( SQLException e) {
+            e.printStackTrace ();
+            throw new CurrencyError ("Error closing database related resources ");
         }
     }
 }

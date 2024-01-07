@@ -1,16 +1,17 @@
 package repositories;
 
 import config.DatabaseConnection;
-import entitries.*;
 
+import entitries.Category;
+import entitries.TypeCategory;
 import exceptions.CategoryError;
-import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor
+@NoArgsConstructor
 public class CategoryRepository implements CrudOperations<Category, Long> {
     @Override
     public List<Category> findAll(){
@@ -165,7 +166,7 @@ public class CategoryRepository implements CrudOperations<Category, Long> {
             e.printStackTrace();
             throw new CategoryError ("Error retrieving currency from database");
         } finally {
-            AccountRepository.createStmt ( connection, stmt, rs );
+            blockFinnally ( connection, stmt, rs );
         }
     }
 
@@ -202,11 +203,8 @@ public class CategoryRepository implements CrudOperations<Category, Long> {
         stmt.setString ( 2, String.valueOf ( toSave.getCategoryType () ) );
     }
 
-    private void blockFinnally(Connection connection, PreparedStatement stmt, ResultSet rs){
-        finnally ( connection, stmt, rs );
-    }
 
-    static void finnally(Connection connection, PreparedStatement stmt, ResultSet rs){
+    private void blockFinnally(Connection connection, PreparedStatement stmt, ResultSet rs){
         try {
             if (rs != null) rs.close();
             if (stmt != null) stmt.close();

@@ -26,7 +26,7 @@ public class AccountTest {
     @Test
     void testFindAllAccountSuccess() {
         assertDoesNotThrow ( () -> {
-            int size = 4;
+            int size = 11;
             List<Account> accounts = subject.findAll();
             assertNotNull(accounts, "List of accounts should not be null");
             assertFalse(accounts.isEmpty(), "List of accounts should not be empty");
@@ -70,7 +70,7 @@ public class AccountTest {
     @Test
     void testUpdateAllAccountWithoutCurrencySuccess() {
         assertDoesNotThrow(() -> {
-            final Long id = 2L;
+            final Long id = 18L;
             List<Account> accountsToSave = List.of(
                     Account.builder()
                             .id ( id )
@@ -89,7 +89,7 @@ public class AccountTest {
     }
 
     @Test
-    void testUpdateAllAccountWithSuccess() {
+    void testUpdateAllAccountWithCurrencySuccess() {
         assertDoesNotThrow(() -> {
             Currency currency = new Currency ( 5L, NameCurrency.EURO, CodeCurrency.EUR );
             final Long id = 5L;
@@ -114,7 +114,7 @@ public class AccountTest {
     @Test
     void testSaveAllAccountWithCurrencySuccess() {
         assertDoesNotThrow(() -> {
-            Currency currency = new Currency ( null, NameCurrency.ARIARY, CodeCurrency.AR );
+            Currency currency = new Currency ( null, NameCurrency.EURO, CodeCurrency.EUR );
             List<Account> accountsToSave = List.of(
                     Account.builder()
                             .name(AccountName.SAVINGS_ACCOUNT)
@@ -136,7 +136,7 @@ public class AccountTest {
     @Test
     void testDeleteByIdCurrencySuccess() {
         assertDoesNotThrow ( () -> {
-            Long id = 9L;
+            Long id = 18L;
             Account accountBeforeDeleted = subject.findById ( id );
             List<Account> accountsBeforeDeleted = subject.findAll();
            Account accountAfterDeleted = subject.deleteById ( id );
