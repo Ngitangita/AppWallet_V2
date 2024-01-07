@@ -2,22 +2,22 @@ package repositories;
 
 import config.DatabaseConnection;
 import entitries.Account;
+import entitries.Category;
 import entitries.Transaction;
 import entitries.TypeTransaction;
 import exceptions.AccountError;
 import exceptions.TransactionError;
+import lombok.AllArgsConstructor;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 public class TransactionRepository implements CrudOperations<Transaction, Long>{
     private final AccountRepository accountRepository;
-
-    public TransactionRepository(AccountRepository accountRepository) {
-        this.accountRepository = accountRepository;
-    }
+    private final CategoryRepository categoryRepository;
 
     @Override
     public List<Transaction> findAll(){
@@ -32,12 +32,15 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
             rs = stmt.executeQuery();
             while (rs.next()) {
                 long currencyId = rs.getLong("account_id");
+                long categoryId = rs.getLong("category_id");
                 Account account = (currencyId != 0L) ? this.accountRepository.findById(currencyId) : null;
+                Category category = (categoryId != 0L) ? this.categoryRepository.findById(categoryId) : null;
                 Transaction transaction = Transaction.builder()
                         .id(rs.getLong("id"))
                         .label(rs.getString("label"))
                         .dateTime(rs.getTimestamp("date_time").toLocalDateTime())
                         .amount(rs.getDouble("amount"))
+                        .category ( category )
                         .typeTransaction ( TypeTransaction.valueOf ( rs.getString( "transaction_type") ) )
                         .account(account)
                         .build();
@@ -76,7 +79,7 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
 
     @Override
     public Transaction save(Transaction toSave) {
-        final String query = "INSERT INTO \"transaction\" (label, amount, date_time, transaction_type, account_id) VALUES (?, ?, ?, ?, ?)";
+        final String query = "INSERT INTO \"transaction\" (label, amount, date_time, transaction_type, account_id, category_id) VALUES (?, ?, ?, ?, ?, ?)";
         Connection connection = null;
         PreparedStatement stmt = null;
 
@@ -124,13 +127,12 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
         if (toUpdate.getId() != null && account != null) {
             Connection connection = null;
             PreparedStatement stmt = null;
-            final String query = "UPDATE \"transaction\" SET label = ?, amount = ?, date_time = ?, transaction_type = ?, account_id = ? WHERE id = ?";
+            final String query = "UPDATE \"transaction\" SET label = ?, amount = ?, date_time = ?, transaction_type = ?, account_id = ?, category_id = ? WHERE id = ?";
             try {
                 connection = DatabaseConnection.getConnection();
                 stmt = connection.prepareStatement(query);
-                this.saveOrUpdateTransaction ( toUpdate );
                 this.setTransaction ( toUpdate, stmt );
-                stmt.setLong(6, toUpdate.getId());
+                stmt.setLong(7, toUpdate.getId());
                 int rows = stmt.executeUpdate();
                 if (rows > 0) {
                     return toUpdate;
@@ -167,12 +169,15 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
             rs = stmt.executeQuery();
             if (rs.next()) {
                 long currencyId = rs.getLong("account_id");
+                long categoryId = rs.getLong("category_id");
                 Account account = (currencyId != 0L) ? this.accountRepository.findById(currencyId) : null;
+                Category category = (categoryId != 0L) ? this.categoryRepository.findById(categoryId) : null;
                 return  Transaction.builder()
                         .id(rs.getLong("id"))
                         .label(rs.getString("label"))
                         .dateTime(rs.getTimestamp("date_time").toLocalDateTime())
                         .amount(rs.getDouble("amount"))
+                        .category ( category )
                         .typeTransaction ( TypeTransaction.valueOf ( rs.getString( "transaction_type") ) )
                         .account(account)
                         .build();
@@ -216,23 +221,7 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
     }
 
 
-    private void saveOrUpdateTransaction(Transaction toUpdate){
-        Account account = toUpdate.getAccount ();
-        if (account != null){
-            if (account.getId () != null){
-                account = this.accountRepository.update ( account );
-                toUpdate.setAccount ( account );
-            }else{
-                account = this.accountRepository.save ( account );
-                toUpdate.setAccount ( account );
-            }
-
-        }
-    }
-
-
     private void setTransaction(Transaction toSave, PreparedStatement stmt) throws SQLException {
-        Account account = toSave.getAccount ();
         String label = toSave.getLabel ();
         Double amount = toSave.getAmount ();
         LocalDateTime dateTime = toSave.getDateTime ();
@@ -241,11 +230,40 @@ public class TransactionRepository implements CrudOperations<Transaction, Long>{
         stmt.setDouble(2, amount);
         stmt.setTimestamp (3, Timestamp.valueOf (  dateTime  ) );
         stmt.setString (4, String.valueOf ( transactionType ) );
-        this.saveOrUpdateTransaction (toSave);
+        Account account = toSave.getAccount ();
+        Category category = toSave.getCategory ();
+        if (account != null){
+            if (account.getId () != null){
+                account = this.accountRepository.update ( account );
+                toSave.setAccount ( account );
+            }else{
+                account = this.accountRepository.save ( account );
+                toSave.setAccount ( account );
+            }
+
+        }
+
+        if (category != null){
+            if (category.getId () != null){
+                category = this.categoryRepository.update ( category );
+                toSave.setCategory ( category );
+            }else{
+                category = this.categoryRepository.save ( category );
+                toSave.setCategory ( category );
+            }
+
+        }
+
         if (account != null) {
             stmt.setLong(5, account.getId());
         } else {
             stmt.setNull(5, Types.BIGINT);
+        }
+
+        if (category != null) {
+            stmt.setLong(6, category.getId());
+        } else {
+            stmt.setNull(6, Types.BIGINT);
         }
     }
 
