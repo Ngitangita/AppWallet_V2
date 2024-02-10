@@ -1,4 +1,3 @@
-
 -- Table for currencies
         CREATE TABLE IF NOT EXISTS "currency" (
             id serial PRIMARY KEY,
@@ -68,11 +67,6 @@
     INSERT INTO "category" (name, type_category) VALUES
      ('Restaurant', 'FOOD'),
      ('Téléphone et Multimédia', 'ENTERTAINMENT');
-
-
-
-
-
 
 
 
